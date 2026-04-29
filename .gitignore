@@ -32,6 +32,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# internal reference docs — not for version control
+src/test/*.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

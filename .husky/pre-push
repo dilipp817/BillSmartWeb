@@ -1,0 +1,29 @@
+#!/bin/sh
+
+echo "🔍 BillSmart pre-push checks starting..."
+
+# 1. TypeScript — catch type errors
+echo "\n📘 Running TypeScript type check..."
+pnpm type-check
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript errors found. Fix them before pushing."
+  exit 1
+fi
+
+# 2. ESLint — catch rule violations
+echo "\n🔎 Running ESLint..."
+pnpm lint
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint violations found. Run 'pnpm lint:fix' or fix manually before pushing."
+  exit 1
+fi
+
+# 3. Unit tests — catch regressions
+echo "\n🧪 Running unit tests..."
+pnpm test --run
+if [ $? -ne 0 ]; then
+  echo "❌ Unit tests failed. Fix failing tests before pushing."
+  exit 1
+fi
+
+echo "\n✅ All checks passed. Pushing..."
