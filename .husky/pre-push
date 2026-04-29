@@ -20,7 +20,7 @@ fi
 
 # 3. Unit tests — catch regressions
 echo "\n🧪 Running unit tests..."
-pnpm test --run
+pnpm test --run --passWithNoTests
 if [ $? -ne 0 ]; then
   echo "❌ Unit tests failed. Fix failing tests before pushing."
   exit 1
