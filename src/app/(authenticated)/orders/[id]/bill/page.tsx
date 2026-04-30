@@ -6,14 +6,16 @@ import { z } from "zod";
 import { AlertCircle, ArrowLeft, Loader2, Receipt } from "lucide-react";
 import Link from "next/link";
 
-import { UserRole } from "@/constants";
+import { OrderType, UserRole } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RoleGuard } from "@/components/role-guard";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { useAuthStore } from "@/store/use-auth-store";
 import { BillBreakdownCard } from "@/features/billing/components/bill-breakdown-card";
 import { useGenerateBill } from "@/features/billing/hooks/use-generate-bill";
+import { PrintButton } from "@/features/print/components/print-button";
 
 // ─── Discount validation ──────────────────────────────────────────────────────
 
@@ -41,6 +43,7 @@ export default function GenerateBillPage({ params, searchParams }: PageProps) {
   const tableId = tableIdParam ? Number(tableIdParam) : undefined;
 
   const isDiscountEnabled = useFeatureFlag("is_bill_discount_enabled");
+  const cashierName = useAuthStore((s) => s.user?.username);
 
   const [discountInput, setDiscountInput] = useState("0");
   const [discountError, setDiscountError] = useState<string | null>(null);
@@ -82,6 +85,15 @@ export default function GenerateBillPage({ params, searchParams }: PageProps) {
         /* ── Bill generated — show breakdown + proceed button ─────────────── */
         <div className="space-y-4">
           <BillBreakdownCard bill={bill} />
+
+          {/* Print receipt — feature-flagged, hidden when is_bill_printing_enabled is false */}
+          <PrintButton
+            bill={bill}
+            context={{
+              order_type: tableId ? OrderType.DINE_IN : OrderType.TAKEAWAY,
+              cashier_name: cashierName,
+            }}
+          />
 
           <Link
             href={`/orders/${orderId}/payment?billId=${bill.id}${tableId ? `&tableId=${tableId}` : ""}`}

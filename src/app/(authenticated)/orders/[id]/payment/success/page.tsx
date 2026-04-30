@@ -5,16 +5,44 @@ import { use } from "react";
 import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
+import { OrderType } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { useAuthStore } from "@/store/use-auth-store";
 import { PaymentHistoryList } from "@/features/billing/components/payment-history-list";
 import { useReleaseTable } from "@/features/billing/hooks/use-release-table";
+import { useBill } from "@/features/billing/hooks/use-bill";
+import { PrintButton } from "@/features/print/components/print-button";
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface PageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ paymentId?: string; billId?: string; tableId?: string }>;
+}
+
+// ─── Print sub-component ──────────────────────────────────────────────────────
+
+/**
+ * Fetches the bill then renders PrintButton.
+ * Isolated so useBill is only called when billId is present and printing is
+ * potentially enabled (outer flag check happens inside PrintButton itself).
+ */
+function PrintBillButton({ billId, tableId }: { billId: number; tableId: number | null }) {
+  const cashierName = useAuthStore((s) => s.user?.username);
+  const { bill } = useBill(billId);
+
+  if (!bill) return null;
+
+  return (
+    <PrintButton
+      bill={bill}
+      context={{
+        order_type: tableId ? OrderType.DINE_IN : OrderType.TAKEAWAY,
+        cashier_name: cashierName,
+      }}
+    />
+  );
 }
 
 // ─── Table release sub-component ─────────────────────────────────────────────
@@ -108,6 +136,9 @@ export default function PaymentSuccessPage({ params, searchParams }: PageProps) 
 
       {/* ── Payment history (B-07) ─────────────────────────────────────────── */}
       {billId && <PaymentHistoryList billId={billId} />}
+
+      {/* ── Print receipt (P-03) ───────────────────────────────────────────── */}
+      {billId && <PrintBillButton billId={billId} tableId={tableId} />}
 
       {/* ── Table release (B-08) ───────────────────────────────────────────── */}
       {isTableMgmtEnabled && tableId && <TableReleaseButton tableId={tableId} />}
