@@ -80,12 +80,13 @@ export function useRecordPayment(orderId: number, billId?: number): UseRecordPay
       return createPayment(request);
     },
     onSuccess: (payment) => {
+      const billQuery = payment.bill_id ? `&billId=${payment.bill_id}` : "";
       if (payment.status === "SUCCESS") {
         // CASH / UPI / WALLET — immediately paid
-        router.push(`/orders/${orderId}/payment/success?paymentId=${payment.id}`);
+        router.push(`/orders/${orderId}/payment/success?paymentId=${payment.id}${billQuery}`);
       } else {
         // CARD — PENDING, hand off to B-06 card flow
-        router.push(`/orders/${orderId}/payment/card?paymentId=${payment.id}`);
+        router.push(`/orders/${orderId}/payment/card?paymentId=${payment.id}${billQuery}`);
       }
     },
   });

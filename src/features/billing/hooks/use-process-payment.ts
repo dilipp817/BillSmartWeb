@@ -38,7 +38,8 @@ export function useProcessPayment(orderId: number, paymentId: number): UseProces
   const mutation = useMutation({
     mutationFn: () => processPayment(paymentId),
     onSuccess: (payment) => {
-      router.push(`/orders/${orderId}/payment/success?paymentId=${payment.id}`);
+      const billQuery = payment.bill_id ? `&billId=${payment.bill_id}` : "";
+      router.push(`/orders/${orderId}/payment/success?paymentId=${payment.id}${billQuery}`);
     },
   });
 
