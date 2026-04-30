@@ -14,7 +14,7 @@ import type { AvailableTableDto } from "@/features/tables/types";
 import { cartItemCount, cartRunningTotal, useCartStore } from "@/store/use-cart-store";
 import { formatCurrency } from "@/utils/currency";
 
-import { useCreateOrder } from "../hooks/use-create-order";
+import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
 export default function CreateOrderPage() {
   const [notes, setNotes] = useState("");
