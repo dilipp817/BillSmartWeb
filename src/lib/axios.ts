@@ -24,7 +24,9 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token missing or expired — redirect to login immediately.
       // Use window.location so the full page reloads and all client state clears.
-      if (typeof window !== "undefined") {
+      // Skip the redirect if we are already on /login — the credentials were
+      // simply wrong and the form's error state must display the message.
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
     }
