@@ -13,19 +13,25 @@ import { useProcessPayment } from "@/features/billing/hooks/use-process-payment"
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ paymentId?: string; amount?: string }>;
+  searchParams: Promise<{ paymentId?: string; amount?: string; tableId?: string }>;
 }
 
 export default function CardPaymentPage({ params, searchParams }: PageProps) {
   const { id } = use(params);
-  const { paymentId: paymentIdParam, amount: amountParam } = use(searchParams);
+  const {
+    paymentId: paymentIdParam,
+    amount: amountParam,
+    tableId: tableIdParam,
+  } = use(searchParams);
 
   const orderId = Number(id);
   const paymentId = paymentIdParam ? Number(paymentIdParam) : null;
+  const tableId = tableIdParam ? Number(tableIdParam) : undefined;
 
   const { processCardPayment, isPending, isError, errorMessage } = useProcessPayment(
     orderId,
-    paymentId ?? 0
+    paymentId ?? 0,
+    tableId
   );
 
   // Guard: paymentId must be present in the URL (set by useRecordPayment in B-05)

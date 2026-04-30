@@ -32,14 +32,21 @@ interface UseProcessPaymentResult {
  *
  * On success → navigates to /orders/{orderId}/payment/success?paymentId={id}
  */
-export function useProcessPayment(orderId: number, paymentId: number): UseProcessPaymentResult {
+export function useProcessPayment(
+  orderId: number,
+  paymentId: number,
+  tableId?: number
+): UseProcessPaymentResult {
   const router = useRouter();
 
   const mutation = useMutation({
     mutationFn: () => processPayment(paymentId),
     onSuccess: (payment) => {
       const billQuery = payment.bill_id ? `&billId=${payment.bill_id}` : "";
-      router.push(`/orders/${orderId}/payment/success?paymentId=${payment.id}${billQuery}`);
+      const tableQuery = tableId ? `&tableId=${tableId}` : "";
+      router.push(
+        `/orders/${orderId}/payment/success?paymentId=${payment.id}${billQuery}${tableQuery}`
+      );
     },
   });
 

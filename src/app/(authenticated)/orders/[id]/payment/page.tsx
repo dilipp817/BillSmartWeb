@@ -33,15 +33,16 @@ const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ billId?: string; amount?: string }>;
+  searchParams: Promise<{ billId?: string; amount?: string; tableId?: string }>;
 }
 
 export default function RecordPaymentPage({ params, searchParams }: PageProps) {
   const { id } = use(params);
-  const { billId: billIdParam, amount: amountParam } = use(searchParams);
+  const { billId: billIdParam, amount: amountParam, tableId: tableIdParam } = use(searchParams);
 
   const orderId = Number(id);
   const billId = billIdParam ? Number(billIdParam) : undefined;
+  const tableId = tableIdParam ? Number(tableIdParam) : undefined;
 
   // Pre-fill from query param (remaining_amount passed from B-04 breakdown)
   const [amountInput, setAmountInput] = useState(amountParam ?? "");
@@ -49,7 +50,11 @@ export default function RecordPaymentPage({ params, searchParams }: PageProps) {
 
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
 
-  const { recordPayment, isPending, isError, errorMessage } = useRecordPayment(orderId, billId);
+  const { recordPayment, isPending, isError, errorMessage } = useRecordPayment(
+    orderId,
+    billId,
+    tableId
+  );
 
   // Change amount — only relevant for CASH overpayments
   const parsedAmount = Number(amountInput);
