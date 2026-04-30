@@ -19,12 +19,15 @@ export interface TokenValidation {
   restaurant_id: number | null; // null for super_admin accounts
 }
 
-// Shape returned by POST /auth/login (flat object — no nested user field)
+// Shape returned by POST /auth/login (flat object — no nested user field).
+// NOTE: `token` is intentionally absent — the Next.js proxy extracts it,
+// sets it as an httpOnly cookie, and strips it before the response reaches the browser.
 export interface LoginResponse {
-  token: string;
+  id: number;
   username: string;
+  email: string;
   role: UserRole;
   restaurant_id: number;
+  expires_in: number; // seconds until expiry
   expires_at: number; // Unix epoch seconds
-  message: string;
 }

@@ -15,6 +15,8 @@ export const CURRENCY_DECIMAL_PLACES = 2;
 // Auth
 export const TOKEN_LIFETIME_SECONDS = 86_400; // 24 hours — JWT is non-renewable; re-login required
 export const TOKEN_VALIDATION_THROTTLE_MS = 60_000; // max one validate call per minute on tab focus
+export const TOKEN_COOKIE = "bs_token"; // httpOnly cookie name — must match proxy route
+export const AUTH_LOGIN_PATH = "/api/v1/auth/login"; // backend login endpoint path
 
 // Pagination
 export const DEFAULT_PAGE_SIZE = 20;
