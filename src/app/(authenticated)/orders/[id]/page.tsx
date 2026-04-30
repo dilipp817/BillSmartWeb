@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import { use, useState } from "react";
 
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RoleGuard } from "@/components/role-guard";
 import { FoodBrowseGrid } from "@/features/menu/components/food-browse-grid";
 import type { FoodListItem } from "@/features/menu/types";
+import { OrderStatusActions } from "@/features/orders/components/order-status-actions";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
 import { useOrderDetail } from "@/features/orders/hooks/use-order-detail";
 import { formatCurrency } from "@/utils/currency";
@@ -94,6 +94,7 @@ export default function OrderDetailPage({ params }: PageProps) {
 
         <div className="flex items-center gap-3">
           <OrderStatusBadge status={order.status} />
+          <OrderStatusActions orderId={orderId} currentStatus={order.status} />
           <RoleGuard allowedRoles={[UserRole.MANAGER, UserRole.ADMIN]}>
             <Button
               variant="destructive"
