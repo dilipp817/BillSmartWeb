@@ -24,6 +24,12 @@ const CANCELLABLE_STATUSES: OrderStatus[] = [
   OrderStatus.IN_PROGRESS,
   OrderStatus.HOLD,
 ];
+/** Statuses where generating a bill is meaningful */
+const BILLABLE_STATUSES: OrderStatus[] = [
+  OrderStatus.IN_PROGRESS,
+  OrderStatus.COMPLETED,
+  OrderStatus.DELIVERED,
+];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -66,6 +72,7 @@ export default function OrderDetailPage({ params }: PageProps) {
 
   const canAddItems = CAN_ADD_ITEMS_STATUSES.includes(order.status);
   const canCancel = CANCELLABLE_STATUSES.includes(order.status);
+  const isBillable = BILLABLE_STATUSES.includes(order.status);
 
   const tableLabel =
     order.order_type === OrderType.DINE_IN && order.table_number
@@ -95,6 +102,13 @@ export default function OrderDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-3">
           <OrderStatusBadge status={order.status} />
           <OrderStatusActions orderId={orderId} currentStatus={order.status} />
+          {isBillable && (
+            <Link href={`/orders/${orderId}/bill`}>
+              <Button variant="outline" size="sm">
+                Generate Bill
+              </Button>
+            </Link>
+          )}
           <RoleGuard allowedRoles={[UserRole.MANAGER, UserRole.ADMIN]}>
             <Button
               variant="destructive"
