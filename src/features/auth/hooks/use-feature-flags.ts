@@ -27,6 +27,10 @@ export function useFeatureFlags(): void {
   useEffect(() => {
     if (!isAuthenticated || restaurantId === null) return;
 
+    // Capture the narrowed value so the async closure always has `number`,
+    // not `number | null` — avoids a type assertion inside fetchFlags.
+    const safeId = restaurantId;
+
     async function fetchFlags() {
       const now = Date.now();
       // Read fresh values from the store at call time — avoids stale closures
@@ -36,7 +40,7 @@ export function useFeatureFlags(): void {
       if (lastFetchedAt !== null && now - lastFetchedAt < FLAG_REFETCH_THROTTLE_MS) return;
 
       try {
-        const flags = await getFeatureFlags(restaurantId as number);
+        const flags = await getFeatureFlags(safeId);
         setFlags(flags);
       } catch {
         // Silently ignored — app continues with default/cached flags.

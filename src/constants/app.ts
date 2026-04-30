@@ -17,6 +17,7 @@ export const TOKEN_LIFETIME_SECONDS = 86_400; // 24 hours — JWT is non-renewab
 export const TOKEN_VALIDATION_THROTTLE_MS = 60_000; // max one validate call per minute on tab focus
 export const TOKEN_COOKIE = "bs_token"; // httpOnly cookie name — must match proxy route
 export const AUTH_LOGIN_PATH = "/api/v1/auth/login"; // backend login endpoint path
+export const AUTH_LOGOUT_PATH = "/api/v1/auth/logout"; // proxy clears httpOnly cookie on this path
 export const DEVICE_TYPE = "web"; // sent with every login request; never changes for the web client
 export const DEVICE_ID_KEY = "bs_device_id"; // localStorage key for the stable browser device identifier
 
