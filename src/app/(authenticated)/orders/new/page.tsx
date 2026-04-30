@@ -12,6 +12,7 @@ import type { FoodListItem } from "@/features/menu/types";
 import { TableSelectionGrid } from "@/features/tables/components/table-selection-grid";
 import type { AvailableTableDto } from "@/features/tables/types";
 import { cartItemCount, cartRunningTotal, useCartStore } from "@/store/use-cart-store";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { formatCurrency } from "@/utils/currency";
 
 import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
@@ -33,6 +34,7 @@ export default function CreateOrderPage() {
 
   // ── Order mutation ──────────────────────────────────────────────────────────
   const { submitOrder, isPending, isError, errorMessage } = useCreateOrder();
+  const isTableManagementEnabled = useFeatureFlag("is_table_management_enabled");
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -58,16 +60,18 @@ export default function CreateOrderPage() {
 
       {/* ── Right: Cart Panel ─────────────────────────────────────────────── */}
       <aside className="flex w-80 shrink-0 flex-col gap-4 overflow-y-auto">
-        {/* Table selection — feature-flagged; hidden when flag off (= TAKEAWAY) */}
-        <div>
-          <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-            Table
-          </p>
-          <TableSelectionGrid selectedTableId={tableId} onSelect={handleTableSelect} />
-          {orderType === OrderType.TAKEAWAY && (
-            <p className="text-muted-foreground mt-1 text-xs">Takeaway order</p>
-          )}
-        </div>
+        {/* Table selection — feature-flagged; hidden entirely when flag off */}
+        {isTableManagementEnabled && (
+          <div>
+            <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+              Table
+            </p>
+            <TableSelectionGrid selectedTableId={tableId} onSelect={handleTableSelect} />
+            {orderType === OrderType.TAKEAWAY && (
+              <p className="text-muted-foreground mt-1 text-xs">Takeaway order</p>
+            )}
+          </div>
+        )}
 
         {/* Cart items */}
         <div className="bg-card ring-foreground/10 flex-1 rounded-xl p-4 ring-1">
