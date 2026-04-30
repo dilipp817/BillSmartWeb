@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
-import { PaymentMethod } from "@/constants";
+import { PaymentMethod, PaymentStatus } from "@/constants";
 import { generatePaymentRef } from "@/utils/payment-ref";
 
 import type { CreatePaymentRequest, PaymentDto } from "../types";
@@ -49,7 +49,11 @@ interface UseRecordPaymentResult {
  * On CASH/UPI/WALLET success → navigates to /orders/{orderId}/payment/success?paymentId={id}
  * On CARD success (PENDING)  → navigates to /orders/{orderId}/payment/card?paymentId={id} (B-06)
  */
-export function useRecordPayment(orderId: number, billId?: number): UseRecordPaymentResult {
+export function useRecordPayment(
+  orderId: number,
+  billId?: number,
+  tableId?: number
+): UseRecordPaymentResult {
   const router = useRouter();
 
   // Persisted across renders via useRef — generated once, reused on retry.
@@ -81,12 +85,17 @@ export function useRecordPayment(orderId: number, billId?: number): UseRecordPay
     },
     onSuccess: (payment) => {
       const billQuery = payment.bill_id ? `&billId=${payment.bill_id}` : "";
-      if (payment.status === "SUCCESS") {
+      const tableQuery = tableId ? `&tableId=${tableId}` : "";
+      if (payment.status === PaymentStatus.SUCCESS) {
         // CASH / UPI / WALLET — immediately paid
-        router.push(`/orders/${orderId}/payment/success?paymentId=${payment.id}${billQuery}`);
+        router.push(
+          `/orders/${orderId}/payment/success?paymentId=${payment.id}${billQuery}${tableQuery}`
+        );
       } else {
         // CARD — PENDING, hand off to B-06 card flow
-        router.push(`/orders/${orderId}/payment/card?paymentId=${payment.id}${billQuery}`);
+        router.push(
+          `/orders/${orderId}/payment/card?paymentId=${payment.id}${billQuery}${tableQuery}`
+        );
       }
     },
   });

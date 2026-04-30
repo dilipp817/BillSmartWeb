@@ -31,11 +31,14 @@ const discountSchema = z.coerce
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tableId?: string }>;
 }
 
-export default function GenerateBillPage({ params }: PageProps) {
+export default function GenerateBillPage({ params, searchParams }: PageProps) {
   const { id } = use(params);
+  const { tableId: tableIdParam } = use(searchParams);
   const orderId = Number(id);
+  const tableId = tableIdParam ? Number(tableIdParam) : undefined;
 
   const isDiscountEnabled = useFeatureFlag("is_bill_discount_enabled");
 
@@ -80,7 +83,9 @@ export default function GenerateBillPage({ params }: PageProps) {
         <div className="space-y-4">
           <BillBreakdownCard bill={bill} />
 
-          <Link href={`/orders/${orderId}/payment?billId=${bill.id}`}>
+          <Link
+            href={`/orders/${orderId}/payment?billId=${bill.id}${tableId ? `&tableId=${tableId}` : ""}`}
+          >
             <Button className="w-full" size="lg">
               Proceed to Payment
             </Button>

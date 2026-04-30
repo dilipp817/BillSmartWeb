@@ -2,18 +2,68 @@
 
 import { use } from "react";
 
-import { CheckCircle2, ArrowLeft } from "lucide-react";
+import { AlertCircle, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { PaymentHistoryList } from "@/features/billing/components/payment-history-list";
+import { useReleaseTable } from "@/features/billing/hooks/use-release-table";
 
-// ─── Page ───────────────────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ paymentId?: string; billId?: string }>;
+  searchParams: Promise<{ paymentId?: string; billId?: string; tableId?: string }>;
 }
+
+// ─── Table release sub-component ─────────────────────────────────────────────
+
+/**
+ * Rendered only when is_table_management_enabled is true AND tableId is in URL.
+ * Isolated into its own component so the hook is only called when needed.
+ */
+function TableReleaseButton({ tableId }: { tableId: number }) {
+  const { releaseTable, isPending, isError, isSuccess, errorMessage } = useReleaseTable(tableId);
+
+  if (isSuccess) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <CheckCircle2 className="size-4 shrink-0" />
+        <span>Table released — marked as available.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <Button
+        variant="outline"
+        className="w-full"
+        size="lg"
+        onClick={releaseTable}
+        disabled={isPending}
+      >
+        {isPending ? (
+          <>
+            <Loader2 className="mr-2 size-4 animate-spin" />
+            Releasing table…
+          </>
+        ) : (
+          "Release Table"
+        )}
+      </Button>
+      {isError && (
+        <p className="text-destructive flex items-center gap-1.5 text-xs">
+          <AlertCircle className="size-3 shrink-0" />
+          {errorMessage}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 /**
  * Payment Success Screen
@@ -22,21 +72,27 @@ interface PageProps {
  *   - useRecordPayment (B-05): CASH / UPI / WALLET auto_process=true
  *   - useProcessPayment (B-06): CARD after PATCH /process confirms SUCCESS
  *
- * B-08 will extend this screen with a table-release action.
- *
- * When billId is present in the URL, renders PaymentHistoryList (B-07)
- * showing the per-payment breakdown for the bill.
+ * When billId is present renders PaymentHistoryList (B-07).
+ * When tableId is present AND is_table_management_enabled is true, renders
+ * the TableReleaseButton (B-08) so staff can free the table after payment.
  */
 export default function PaymentSuccessPage({ params, searchParams }: PageProps) {
   const { id } = use(params);
-  const { paymentId: paymentIdParam, billId: billIdParam } = use(searchParams);
+  const {
+    paymentId: paymentIdParam,
+    billId: billIdParam,
+    tableId: tableIdParam,
+  } = use(searchParams);
 
   const orderId = Number(id);
   const billId = billIdParam ? Number(billIdParam) : null;
+  const tableId = tableIdParam ? Number(tableIdParam) : null;
+
+  const isTableMgmtEnabled = useFeatureFlag("is_table_management_enabled");
 
   return (
     <div className="mx-auto max-w-lg space-y-6 py-8">
-      {/* ── Success indicator ──────────────────────────────────────────────────── */}
+      {/* ── Success indicator ──────────────────────────────────────────────── */}
       <div className="flex flex-col items-center gap-4 text-center">
         <CheckCircle2 className="size-16 text-green-500" />
         <div>
@@ -50,10 +106,13 @@ export default function PaymentSuccessPage({ params, searchParams }: PageProps) 
         )}
       </div>
 
-      {/* ── Payment history (B-07) ──────────────────────────────────────────── */}
+      {/* ── Payment history (B-07) ─────────────────────────────────────────── */}
       {billId && <PaymentHistoryList billId={billId} />}
 
-      {/* ── Actions ─────────────────────────────────────────────────────────────── */}
+      {/* ── Table release (B-08) ───────────────────────────────────────────── */}
+      {isTableMgmtEnabled && tableId && <TableReleaseButton tableId={tableId} />}
+
+      {/* ── Navigation actions ──────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3">
         <Link href={`/orders/${orderId}`}>
           <Button variant="outline" className="w-full" size="lg">

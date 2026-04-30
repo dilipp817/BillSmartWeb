@@ -103,7 +103,9 @@ export default function OrderDetailPage({ params }: PageProps) {
           <OrderStatusBadge status={order.status} />
           <OrderStatusActions orderId={orderId} currentStatus={order.status} />
           {isBillable && (
-            <Link href={`/orders/${orderId}/bill`}>
+            <Link
+              href={`/orders/${orderId}/bill${order.table_id ? `?tableId=${order.table_id}` : ""}`}
+            >
               <Button variant="outline" size="sm">
                 Generate Bill
               </Button>
