@@ -30,3 +30,9 @@ export const MAX_PAGE_SIZE = 100;
 
 // Payment
 export const PAYMENT_REF_PREFIX = "PAY";
+
+// Print Agent — local Node.js bridge between the web app and the thermal printer
+export const PRINT_AGENT_DEFAULT_PORT = 6868;
+export const PRINT_AGENT_DEFAULT_URL = `http://localhost:${PRINT_AGENT_DEFAULT_PORT}`;
+/** Timeout (ms) for all requests to the Print Agent. */
+export const PRINT_AGENT_TIMEOUT_MS = 5_000;
