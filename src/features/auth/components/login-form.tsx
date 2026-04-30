@@ -4,7 +4,6 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import type { AxiosError } from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +12,8 @@ import { Label } from "@/components/ui/label";
 import { DEVICE_TYPE } from "@/constants";
 import { useLogin } from "@/features/auth/hooks/use-login";
 import { getOrCreateDeviceId } from "@/features/auth/utils/device-id";
+import { getLoginErrorMessage } from "@/features/auth/utils/get-login-error-message";
 import { loginSchema, type LoginFormValues } from "@/features/auth/utils/login-schema";
-import type { ApiErrorResponse } from "@/types";
 
 interface LoginFormProps {
   redirectTo: string;
@@ -116,24 +115,4 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
       </CardContent>
     </Card>
   );
-}
-
-/**
- * Maps API / network errors to a user-facing message.
- * Never exposes raw backend messages to avoid leaking internals.
- */
-function getLoginErrorMessage(error: unknown): string {
-  const axiosError = error as AxiosError<ApiErrorResponse>;
-  const status = axiosError.response?.status;
-
-  if (status === 401) return "Invalid username or password.";
-  if (status === 403) return "Your account does not have permission to access this system.";
-  if (status === 429) return "Too many login attempts. Please wait a moment and try again.";
-  if (status === 503 || status === 502)
-    return "The server is temporarily unavailable. Please try again shortly.";
-
-  if (axiosError.code === "ERR_NETWORK")
-    return "Network error. Check your connection and try again.";
-
-  return "Something went wrong. Please try again.";
 }
