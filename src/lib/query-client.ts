@@ -1,5 +1,5 @@
 import { QueryClient, type QueryClientConfig } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
+import { isAxiosError } from "axios";
 
 const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
@@ -7,7 +7,7 @@ const queryClientConfig: QueryClientConfig = {
       // Do not retry on 4xx errors — these are client errors, retrying won't help.
       // Only retry on network failures (no response) or 5xx.
       retry: (failureCount, error) => {
-        const status = (error as AxiosError)?.response?.status;
+        const status = isAxiosError(error) ? error.response?.status : undefined;
         if (status !== undefined && status >= 400 && status < 500) {
           return false;
         }

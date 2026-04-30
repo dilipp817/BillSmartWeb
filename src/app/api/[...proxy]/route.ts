@@ -1,7 +1,12 @@
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { AUTH_LOGIN_PATH, TOKEN_COOKIE, TOKEN_LIFETIME_SECONDS } from "@/constants";
+import {
+  AUTH_LOGIN_PATH,
+  AUTH_LOGOUT_PATH,
+  TOKEN_COOKIE,
+  TOKEN_LIFETIME_SECONDS,
+} from "@/constants";
 import { env } from "@/env";
 
 export { TOKEN_COOKIE };
@@ -84,6 +89,15 @@ async function handler(request: NextRequest, context: RouteContext) {
       maxAge: TOKEN_LIFETIME_SECONDS,
     });
 
+    return response;
+  }
+
+  // Logout — clear the httpOnly cookie regardless of backend response status.
+  // This matches the best-effort onSettled behaviour in useLogout: local state
+  // is always wiped even if the backend invalidation call fails.
+  if (path === AUTH_LOGOUT_PATH) {
+    const response = NextResponse.json(responseData, { status: backendResponse.status });
+    response.cookies.delete(TOKEN_COOKIE);
     return response;
   }
 
