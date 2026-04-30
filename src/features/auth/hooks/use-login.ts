@@ -8,12 +8,15 @@ import { useAuthStore } from "@/store/use-auth-store";
 /**
  * useLogin — wraps the login mutation.
  *
- * On success: stores the user in Zustand and navigates to /dashboard.
+ * @param redirectTo - Path to navigate to on success. Defaults to /dashboard.
+ *                     Must be a same-origin path — validated by the login page.
+ *
+ * On success: stores the user in Zustand and navigates to redirectTo.
  * On error: re-throws so the form can display a user-facing message.
  *
  * The JWT is never touched here — the proxy already set it as an httpOnly cookie.
  */
-export function useLogin() {
+export function useLogin(redirectTo = "/dashboard") {
   const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
@@ -30,7 +33,7 @@ export function useLogin() {
         restaurant_id: loginResponse.restaurant_id,
         is_active: true, // backend only returns active users on login
       });
-      router.push("/dashboard");
+      router.push(redirectTo);
     },
   });
 }
