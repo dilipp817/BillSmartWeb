@@ -1,0 +1,68 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  BarChart3,
+  ClipboardList,
+  LayoutDashboard,
+  Receipt,
+  Settings,
+  TableProperties,
+  Utensils,
+} from "lucide-react";
+
+import { UserRole } from "@/constants";
+import type { FeatureFlags } from "@/store/use-feature-flag-store";
+
+export interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  roles: UserRole[];
+  featureFlag?: keyof FeatureFlags;
+}
+
+export const NAV_ITEMS: NavItem[] = [
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+  },
+  {
+    href: "/orders",
+    label: "Orders",
+    icon: ClipboardList,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+  },
+  {
+    href: "/billing",
+    label: "Billing",
+    icon: Receipt,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+  },
+  {
+    href: "/tables",
+    label: "Tables",
+    icon: TableProperties,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+    featureFlag: "is_table_management_enabled",
+  },
+  {
+    href: "/reports",
+    label: "Reports",
+    icon: BarChart3,
+    roles: [UserRole.MANAGER, UserRole.ADMIN],
+    featureFlag: "is_sales_reports_enabled",
+  },
+  {
+    href: "/menu",
+    label: "Menu",
+    icon: Utensils,
+    roles: [UserRole.ADMIN],
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+  },
+];
