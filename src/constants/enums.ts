@@ -55,3 +55,10 @@ export enum UserRole {
   MANAGER = "manager",
   ADMIN = "admin",
 }
+
+export enum OfflineSyncStatus {
+  PENDING = "PENDING",
+  SYNCING = "SYNCING",
+  SYNCED = "SYNCED",
+  FAILED = "FAILED",
+}
