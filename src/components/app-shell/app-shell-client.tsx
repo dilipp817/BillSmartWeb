@@ -5,10 +5,12 @@ import type { ReactNode } from "react";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useFeatureFlags } from "@/features/auth/hooks/use-feature-flags";
 import { useTokenValidation } from "@/features/auth/hooks/use-token-validation";
+import { useOfflineSyncEffect } from "@/features/orders/hooks/use-offline-order-queue";
 
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 import { OfflineBanner } from "@/components/offline-banner";
+import { OfflineSyncNotice } from "@/components/offline-sync-notice";
 
 interface AppShellClientProps {
   children: ReactNode;
@@ -29,6 +31,7 @@ export function AppShellClient({ children }: AppShellClientProps) {
   useCurrentUser();
   useTokenValidation();
   useFeatureFlags();
+  const { syncedCount } = useOfflineSyncEffect();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -36,6 +39,7 @@ export function AppShellClient({ children }: AppShellClientProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
         <OfflineBanner />
+        <OfflineSyncNotice syncedCount={syncedCount} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
