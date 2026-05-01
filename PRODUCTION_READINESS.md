@@ -6,6 +6,36 @@
 
 ---
 
+## Tracking Summary
+
+| #   | Issue                            | Status                                                                  | Branch                         |
+| --- | -------------------------------- | ----------------------------------------------------------------------- | ------------------------------ |
+| 1   | ReactQueryDevtools in production | ✅ Fixed                                                                | `fix/providers-devtools-guard` |
+| 2   | API_INTERNAL_SECRET unused       | ⏸️ Deferred — needs backend to implement `X-Internal-Secret` validation | —                              |
+| 3   | No error boundaries              | ✅ Fixed                                                                | `fix/app-error-boundary`       |
+| 4   | Dashboard stats null             | ✅ Fixed                                                                | `fix/dashboard-today-stats`    |
+| 5   | Zero tests on payment path       | ⏸️ Deferred — post-launch sprint                                        | —                              |
+| 6   | Print Agent HTTP/HTTPS           | ✅ Non-issue — Chrome/Edge allow HTTPS→localhost                        | —                              |
+| 7   | No observability (Sentry)        | ⏸️ Deferred — set up before go-live                                     | —                              |
+| 8   | Food editing disabled            | ⏸️ Blocked — backend `PUT /api/v1/foods/{id}` not implemented           | —                              |
+
+### Pending Action Items
+
+**Before go-live (frontend):**
+
+- [ ] Set up Sentry — create account at sentry.io, install `@sentry/nextjs`, add `SENTRY_DSN` to env
+
+**Needs backend coordination:**
+
+- [ ] `API_INTERNAL_SECRET` — backend must validate `X-Internal-Secret` header; then wire frontend proxy to send it
+- [ ] Food editing — backend must implement `PUT /api/v1/foods/{id}`
+
+**Post-launch:**
+
+- [ ] Write unit tests: `generatePaymentRef()`, `computeSalesReport()`, cart store, offline queue
+
+---
+
 ## ✅ What Is Production-Grade
 
 | Category                                                                                  | Status                                                  |
