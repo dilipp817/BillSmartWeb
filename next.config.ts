@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -21,6 +22,8 @@ const cspDirectives = [
   "img-src 'self' data: blob:",
   // All XHR/fetch goes to same origin via /api/* proxy
   "connect-src 'self'",
+  // Service worker is served from the same origin
+  "worker-src 'self'",
   "frame-src 'none'",
   // Blocks the page from being embedded in an iframe on any origin
   "frame-ancestors 'none'",
@@ -75,4 +78,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  // Disable service worker in development to avoid HMR conflicts
+  disable: process.env.NODE_ENV === "development",
+});
+
+export default withSerwist(nextConfig);
