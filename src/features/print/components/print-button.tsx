@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import type { BillDto } from "@/features/billing/types";
 import { usePrint } from "@/features/print/hooks/use-print";
+import { usePrinterSettingsStore } from "@/store/use-printer-settings-store";
 import type { ReceiptContext } from "@/features/print/utils/format-receipt";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -13,8 +14,6 @@ import type { ReceiptContext } from "@/features/print/utils/format-receipt";
 interface PrintButtonProps {
   bill: BillDto;
   context: ReceiptContext;
-  /** Override the Print Agent URL — defaults to PRINT_AGENT_DEFAULT_URL (P-04). */
-  agentUrl?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -30,8 +29,9 @@ interface PrintButtonProps {
  *   - Bill detail screen (after bill is generated)
  *   - Payment success screen (after payment is confirmed)
  */
-export function PrintButton({ bill, context, agentUrl }: PrintButtonProps) {
+export function PrintButton({ bill, context }: PrintButtonProps) {
   const isPrintingEnabled = useFeatureFlag("is_bill_printing_enabled");
+  const agentUrl = usePrinterSettingsStore((s) => s.agentUrl);
 
   const { print, isPending, isError, isSuccess, errorMessage } = usePrint(bill, context, agentUrl);
 
