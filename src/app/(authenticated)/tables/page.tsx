@@ -11,6 +11,7 @@ import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 import { TableStatusCard } from "@/features/tables/components/table-status-card";
 import { useTableList } from "@/features/tables/hooks/use-table-list";
+import { useUpdateTableStatus } from "@/features/tables/hooks/use-update-table-status";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ function TableGridSkeleton() {
 export default function TablesPage() {
   const isEnabled = useFeatureFlag("is_table_management_enabled");
   const { tables, total, isLoading, isError } = useTableList();
+  const { updateStatus, updatingTableId, updateError } = useUpdateTableStatus();
 
   // Feature flag — hide entirely when disabled
   if (!isEnabled) {
@@ -65,10 +67,20 @@ export default function TablesPage() {
       {/* Loading */}
       {isLoading && <TableGridSkeleton />}
 
-      {/* Error */}
+      {/* Fetch error */}
       {isError && !isLoading && (
         <div className="text-destructive rounded-lg border border-red-200 bg-red-50 p-4 text-sm">
           Failed to load tables. Please refresh the page.
+        </div>
+      )}
+
+      {/* Status update error */}
+      {updateError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+        >
+          {updateError}
         </div>
       )}
 
@@ -83,7 +95,12 @@ export default function TablesPage() {
       {!isLoading && !isError && tables.length > 0 && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {tables.map((table) => (
-            <TableStatusCard key={table.id} table={table} />
+            <TableStatusCard
+              key={table.id}
+              table={table}
+              onStatusChange={updateStatus}
+              isUpdating={updatingTableId === table.id}
+            />
           ))}
         </div>
       )}
