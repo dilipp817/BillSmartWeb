@@ -3,15 +3,14 @@
 import { Printer, Store } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RoleGuard } from "@/components/role-guard";
 import { UserRole } from "@/constants";
 import { RestaurantSettingsForm } from "@/features/settings/components/restaurant-settings-form";
 import { PrinterSettingsForm } from "@/features/print/components/printer-settings-form";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
-import { useAuthStore } from "@/store/use-auth-store";
 
 export default function SettingsPage() {
   const isPrintingEnabled = useFeatureFlag("is_bill_printing_enabled");
-  const role = useAuthStore((state) => state.role);
 
   return (
     <div className="space-y-6">
@@ -21,7 +20,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Restaurant Settings — admin only */}
-      {role === UserRole.ADMIN && (
+      <RoleGuard allowedRoles={[UserRole.ADMIN]}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -36,7 +35,7 @@ export default function SettingsPage() {
             <RestaurantSettingsForm />
           </CardContent>
         </Card>
-      )}
+      </RoleGuard>
 
       {/* Printer Settings — hidden when is_bill_printing_enabled is false */}
       {isPrintingEnabled && (
