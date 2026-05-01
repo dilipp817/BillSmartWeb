@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { AppErrorBoundary } from "@/components/app-error-boundary";
 import { AppShellClient } from "@/components/app-shell/app-shell-client";
 
 interface AuthenticatedLayoutProps {
@@ -7,5 +8,9 @@ interface AuthenticatedLayoutProps {
 }
 
 export default function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
-  return <AppShellClient>{children}</AppShellClient>;
+  return (
+    <AppErrorBoundary>
+      <AppShellClient>{children}</AppShellClient>
+    </AppErrorBoundary>
+  );
 }
