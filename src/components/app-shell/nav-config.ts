@@ -6,6 +6,7 @@ import {
   Receipt,
   Settings,
   TableProperties,
+  Tag,
   Utensils,
 } from "lucide-react";
 
@@ -57,6 +58,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/menu",
     label: "Menu",
     icon: Utensils,
+    roles: [UserRole.ADMIN],
+  },
+  {
+    href: "/categories",
+    label: "Categories",
+    icon: Tag,
     roles: [UserRole.ADMIN],
   },
   {
