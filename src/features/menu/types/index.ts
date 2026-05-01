@@ -82,6 +82,22 @@ export interface FoodListParams {
   is_spicy?: boolean;
   offset?: number;
   limit?: number;
+  /** price:asc | price:desc | name:asc | name:desc */
+  sort?: string;
+}
+
+// Parameters for GET /api/v1/foods/search
+// Note: uses `q` (not `search`), falls back to JWT restaurant_id when omitted,
+// and adds an `is_available` filter not present in the regular list endpoint.
+export interface FoodSearchParams {
+  q?: string;
+  restaurant_id?: number;
+  category_id?: number;
+  is_vegetarian?: boolean;
+  is_spicy?: boolean;
+  is_available?: boolean;
+  offset?: number;
+  limit?: number;
 }
 
 // ─── Create / Update (used in M-01 Admin forms) ───────────────────────────────
@@ -97,6 +113,13 @@ export interface CreateFoodRequest {
   // Note: is_available is NOT sent on create — always true by default
 }
 
+/**
+ * UpdateFoodRequest — same fields as CreateFoodRequest.
+ *
+ * ⚠️ The current backend contract has NO PUT/PATCH endpoint for food items.
+ * This type is kept as the form model for the Add/Edit Food screen (M-05).
+ * If/when the backend adds an update endpoint it will accept this shape.
+ */
 export type UpdateFoodRequest = CreateFoodRequest;
 
 export interface CreateCategoryRequest {
