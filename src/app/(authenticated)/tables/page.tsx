@@ -1,5 +1,12 @@
 "use client";
 
+import Link from "next/link";
+
+import { Settings2 } from "lucide-react";
+
+import { RoleGuard } from "@/components/role-guard";
+import { Button } from "@/components/ui/button";
+import { UserRole } from "@/constants";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 import { TableStatusCard } from "@/features/tables/components/table-status-card";
@@ -44,6 +51,15 @@ export default function TablesPage() {
             </p>
           )}
         </div>
+        {/* Admin-only shortcut to Table Management (CRUD) */}
+        <RoleGuard allowedRoles={[UserRole.ADMIN]}>
+          <Link href="/tables/management">
+            <Button variant="outline" size="sm">
+              <Settings2 className="mr-1.5 size-3.5" />
+              Manage Tables
+            </Button>
+          </Link>
+        </RoleGuard>
       </div>
 
       {/* Loading */}
