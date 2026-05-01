@@ -19,6 +19,8 @@ export interface NavItem {
   icon: LucideIcon;
   roles: UserRole[];
   featureFlag?: keyof FeatureFlags;
+  /** When true, item is greyed-out and unclickable while the browser is offline. */
+  disabledOffline?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -46,6 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: TableProperties,
     roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
     featureFlag: "is_table_management_enabled",
+    disabledOffline: true,
   },
   {
     href: "/reports",
@@ -53,6 +56,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: BarChart3,
     roles: [UserRole.MANAGER, UserRole.ADMIN],
     featureFlag: "is_sales_reports_enabled",
+    disabledOffline: true,
   },
   {
     href: "/menu",
