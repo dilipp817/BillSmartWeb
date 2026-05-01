@@ -1,15 +1,16 @@
 import apiClient from "@/lib/axios";
 import type { ApiResponse } from "@/types";
 
-import type { FoodDetail, FoodListParams, FoodPageData } from "../types";
+import type { CreateFoodRequest, FoodDetail, FoodListParams, FoodPageData } from "../types";
 
 /**
- * Food Service — read functions used by the cashier browse flow (O-05).
- * CRUD functions (create, delete) are added in M-02 (Menu Management Admin).
+ * Food Service — read functions (O-05) + CRUD admin functions (M-02).
  *
  * Base paths:
- *   GET /api/v1/foods               — paginated list with all filters
- *   GET /api/v1/foods/{id}          — full detail
+ *   GET    /api/v1/foods                           — paginated list with all filters
+ *   GET    /api/v1/foods/{id}                      — full detail
+ *   POST   /api/v1/foods/restaurant/{restaurantId} — create food item (admin only)
+ *   DELETE /api/v1/foods/{id}                      — soft-delete food item (admin only)
  *
  * Layer: Service (API calls only — no state, no toasts, no redirects)
  */
@@ -40,4 +41,33 @@ export async function listFoods(params: FoodListParams): Promise<FoodPageData> {
 export async function getFood(foodId: number): Promise<FoodDetail> {
   const response = await apiClient.get<ApiResponse<FoodDetail>>(`/v1/foods/${foodId}`);
   return response.data.data;
+}
+
+/**
+ * POST /api/v1/foods/restaurant/{restaurantId}
+ *
+ * Create a new food item for the given restaurant (admin only).
+ * Note: is_available is NOT in the request body — backend always sets it to true on create.
+ * Returns the full FoodDetail of the newly created item.
+ */
+export async function createFood(
+  restaurantId: number,
+  data: CreateFoodRequest
+): Promise<FoodDetail> {
+  const response = await apiClient.post<ApiResponse<FoodDetail>>(
+    `/v1/foods/restaurant/${restaurantId}`,
+    data
+  );
+  return response.data.data;
+}
+
+/**
+ * DELETE /api/v1/foods/{id}
+ *
+ * Soft-delete a food item (admin only).
+ * Sets is_deleted = true on the backend — the item never appears in any GET response again.
+ * The record is kept in the DB to preserve order history.
+ */
+export async function deleteFood(foodId: number): Promise<void> {
+  await apiClient.delete(`/v1/foods/${foodId}`);
 }
