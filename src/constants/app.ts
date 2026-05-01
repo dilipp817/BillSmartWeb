@@ -36,3 +36,5 @@ export const PRINT_AGENT_DEFAULT_PORT = 6868;
 export const PRINT_AGENT_DEFAULT_URL = `http://localhost:${PRINT_AGENT_DEFAULT_PORT}`;
 /** Timeout (ms) for all requests to the Print Agent. */
 export const PRINT_AGENT_TIMEOUT_MS = 5_000;
+/** localStorage key for the persisted printer settings (agent URL). Per-device, not per-user. */
+export const PRINTER_SETTINGS_STORAGE_KEY = "bs_printer_settings";
