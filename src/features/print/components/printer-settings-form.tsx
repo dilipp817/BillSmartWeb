@@ -1,87 +1,39 @@
 "use client";
 
-import { useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, RotateCcw, Wifi } from "lucide-react";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PRINT_AGENT_DEFAULT_URL } from "@/constants";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
-import { usePrinterHealth } from "../hooks/use-printer-health";
-import { usePrinterSettingsStore } from "@/store/use-printer-settings-store";
-
-// ─── Validation ───────────────────────────────────────────────────────────────
-
-const agentUrlSchema = z
-  .string()
-  .min(1, "URL is required.")
-  .url("Must be a valid URL (e.g. http://localhost:6868).");
+import { usePrinterSettingsForm } from "../hooks/use-printer-settings-form";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
  * PrinterSettingsForm — configure the Print Agent URL for this device.
  *
- * - Validates the URL with Zod before saving or testing.
- * - "Test Connection" hits GET /health on the given URL — does NOT save.
- * - "Save" persists the validated URL to localStorage via usePrinterSettingsStore.
- * - Hidden entirely when is_bill_printing_enabled is false.
+ * JSX only — all state and logic lives in usePrinterSettingsForm().
+ * Feature flag gating is handled by the parent SettingsPage.
  *
  * This is a per-device setting — it is not tied to the user session.
  */
 export function PrinterSettingsForm() {
-  const isPrintingEnabled = useFeatureFlag("is_bill_printing_enabled");
-
-  const { agentUrl: savedUrl, setAgentUrl, resetAgentUrl } = usePrinterSettingsStore();
-  const { testConnection, isPending, isError, isSuccess, health, errorMessage } =
-    usePrinterHealth();
-
-  const [inputUrl, setInputUrl] = useState(savedUrl);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
-
-  // Feature flag off → hide entirely
-  if (!isPrintingEnabled) return null;
-
-  function validate(): string | null {
-    const result = agentUrlSchema.safeParse(inputUrl.trim());
-    if (!result.success) {
-      return result.error.issues[0]?.message ?? "Invalid URL.";
-    }
-    return null;
-  }
-
-  function handleTest() {
-    const error = validate();
-    if (error) {
-      setValidationError(error);
-      return;
-    }
-    setValidationError(null);
-    setIsSaved(false);
-    testConnection(inputUrl.trim());
-  }
-
-  function handleSave() {
-    const error = validate();
-    if (error) {
-      setValidationError(error);
-      return;
-    }
-    setValidationError(null);
-    setAgentUrl(inputUrl.trim());
-    setIsSaved(true);
-  }
-
-  function handleReset() {
-    resetAgentUrl();
-    setInputUrl(PRINT_AGENT_DEFAULT_URL);
-    setValidationError(null);
-    setIsSaved(false);
-  }
+  const {
+    inputUrl,
+    validationError,
+    isSaved,
+    isPending,
+    isError,
+    isSuccess,
+    health,
+    errorMessage,
+    handleInputChange,
+    handleTest,
+    handleSave,
+    handleReset,
+  } = usePrinterSettingsForm();
 
   return (
     <div className="space-y-4">
@@ -92,11 +44,7 @@ export function PrinterSettingsForm() {
           id="agent-url"
           type="url"
           value={inputUrl}
-          onChange={(e) => {
-            setInputUrl(e.target.value);
-            setValidationError(null);
-            setIsSaved(false);
-          }}
+          onChange={(e) => handleInputChange(e.target.value)}
           placeholder={PRINT_AGENT_DEFAULT_URL}
           className="font-mono text-sm"
           disabled={isPending}
