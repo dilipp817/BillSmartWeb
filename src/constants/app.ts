@@ -38,3 +38,9 @@ export const PRINT_AGENT_DEFAULT_URL = `http://localhost:${PRINT_AGENT_DEFAULT_P
 export const PRINT_AGENT_TIMEOUT_MS = 5_000;
 /** localStorage key for the persisted printer settings (agent URL). Per-device, not per-user. */
 export const PRINTER_SETTINGS_STORAGE_KEY = "bs_printer_settings";
+
+// Offline Order Queue
+/** Prefix for the idempotency reference number on offline-queued orders. */
+export const OFFLINE_ORDER_REF_PREFIX = "OFF";
+/** How long (ms) to display the "X orders synced" notice after reconnect. */
+export const OFFLINE_SYNC_NOTIFICATION_DURATION_MS = 4_000;

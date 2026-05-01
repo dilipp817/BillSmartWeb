@@ -1,13 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/use-auth-store";
 import { toCreateOrderItems, useCartStore } from "@/store/use-cart-store";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 import { createOrder } from "../services/order-service";
+import { enqueueOrder } from "./use-offline-order-queue";
 import { ORDERS_QUERY_KEY } from "./use-orders";
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -17,29 +21,43 @@ interface UseCreateOrderResult {
    * Submit the current cart as a new order.
    * Optionally pass a free-text notes string (e.g. "Window seat please").
    * Does nothing if the cart is empty or restaurantId is not available.
+   *
+   * When offline + is_offline_order_sync_enabled=true: queues to IndexedDB.
+   * When offline + flag=false: sets an error state.
    */
   submitOrder: (notes?: string) => void;
   isPending: boolean;
   isError: boolean;
   errorMessage: string | null;
+  /** True briefly after a successful offline enqueue (so UI can confirm). */
+  isOfflineQueued: boolean;
 }
 
 /**
  * useCreateOrder — TanStack Query mutation that creates a new order from the
  * current cart state.
  *
- * On success:
- *   1. Clears the cart (Zustand)
- *   2. Invalidates all order queries so the list refreshes
- *   3. Navigates to the order detail page `/orders/{id}`
+ * Online path:
+ *   1. POST to backend via createOrder()
+ *   2. On success: clear cart → invalidate order queries → navigate to /orders/{id}
  *
- * The Place Order button must be disabled while isPending is true to prevent
- * double submissions (financial safety rule — never optimistic).
+ * Offline path (is_offline_order_sync_enabled=true):
+ *   1. enqueueOrder() → persist to IndexedDB with PENDING status
+ *   2. Clear cart → navigate to /orders (no server ID yet)
+ *   3. useOfflineSyncEffect (in AppShellClient) flushes queue on reconnect
+ *
+ * The Place Order button must be disabled while isPending is true.
  */
 export function useCreateOrder(): UseCreateOrderResult {
   const router = useRouter();
   const restaurantId = useAuthStore((state) => state.restaurantId);
   const { items, tableId, orderType, clearCart } = useCartStore();
+  const isOnline = useOnlineStatus();
+  const isOfflineSyncEnabled = useFeatureFlag("is_offline_order_sync_enabled");
+
+  const [isQueuingOffline, setIsQueuingOffline] = useState(false);
+  const [offlineError, setOfflineError] = useState<string | null>(null);
+  const [isOfflineQueued, setIsOfflineQueued] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (notes: string | undefined) => {
@@ -61,17 +79,51 @@ export function useCreateOrder(): UseCreateOrderResult {
     },
   });
 
+  const handleOfflineQueue = async (notes?: string) => {
+    if (!restaurantId) return;
+    setIsQueuingOffline(true);
+    setOfflineError(null);
+    try {
+      await enqueueOrder(restaurantId, {
+        table_id: tableId,
+        order_type: orderType,
+        items: toCreateOrderItems(items),
+        ...(notes?.trim() && { notes: notes.trim() }),
+      });
+      clearCart();
+      setIsOfflineQueued(true);
+      router.push("/orders");
+    } catch {
+      setOfflineError("Failed to save order offline. Please try again.");
+    } finally {
+      setIsQueuingOffline(false);
+    }
+  };
+
   const submitOrder = (notes?: string) => {
-    if (items.length === 0 || !restaurantId || mutation.isPending) return;
+    if (items.length === 0 || !restaurantId || mutation.isPending || isQueuingOffline) return;
+
+    if (!isOnline) {
+      if (isOfflineSyncEnabled) {
+        void handleOfflineQueue(notes);
+      } else {
+        setOfflineError("No internet connection. Cannot place order.");
+      }
+      return;
+    }
+
+    setOfflineError(null);
     mutation.mutate(notes);
   };
 
-  const errorMessage = mutation.isError ? "Failed to place order. Please try again." : null;
+  const errorMessage =
+    offlineError ?? (mutation.isError ? "Failed to place order. Please try again." : null);
 
   return {
     submitOrder,
-    isPending: mutation.isPending,
-    isError: mutation.isError,
+    isPending: mutation.isPending || isQueuingOffline,
+    isError: mutation.isError || offlineError !== null,
     errorMessage,
+    isOfflineQueued,
   };
 }
