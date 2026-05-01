@@ -1,4 +1,5 @@
 import apiClient from "@/lib/axios";
+import { TableStatus } from "@/constants";
 import type { ApiResponse } from "@/types";
 import type {
   AvailableTableDto,
@@ -85,7 +86,7 @@ export async function listOccupiedTables(restaurantId: number): Promise<TableDto
  */
 export async function listTablesByStatus(
   restaurantId: number,
-  status: string
+  status: TableStatus
 ): Promise<TableDto[]> {
   const response = await apiClient.get<ApiResponse<TableDto[]>>(
     `${base(restaurantId)}/status/${status}`
@@ -132,7 +133,7 @@ export async function updateTable(
 export async function updateTableStatus(
   restaurantId: number,
   tableId: number,
-  newStatus: string
+  newStatus: TableStatus
 ): Promise<TableDto> {
   const response = await apiClient.patch<ApiResponse<TableDto>>(
     `${base(restaurantId)}/${tableId}/status`,
