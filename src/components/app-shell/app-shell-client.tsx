@@ -8,6 +8,7 @@ import { useTokenValidation } from "@/features/auth/hooks/use-token-validation";
 
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
+import { OfflineBanner } from "@/components/offline-banner";
 
 interface AppShellClientProps {
   children: ReactNode;
@@ -34,6 +35,7 @@ export function AppShellClient({ children }: AppShellClientProps) {
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
+        <OfflineBanner />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>

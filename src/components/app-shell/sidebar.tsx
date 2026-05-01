@@ -52,6 +52,21 @@ export function Sidebar() {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
 
+              if (item.isOfflineDisabled) {
+                return (
+                  <li key={item.href}>
+                    <span
+                      title="Unavailable offline"
+                      className="text-sidebar-foreground/40 flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium"
+                      aria-disabled="true"
+                    >
+                      <Icon className="size-4 shrink-0" aria-hidden="true" />
+                      {item.label}
+                    </span>
+                  </li>
+                );
+              }
+
               return (
                 <li key={item.href}>
                   <Link
