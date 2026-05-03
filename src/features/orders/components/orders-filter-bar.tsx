@@ -67,7 +67,7 @@ export function OrdersFilterBar({
         <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
         <Input
           type="search"
-          placeholder="Search by order # or table…"
+          placeholder="Search by order #, table, status…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
