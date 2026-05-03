@@ -18,8 +18,8 @@ const cspDirectives = [
   // Next.js injects inline styles; Google Fonts used for Geist typeface
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  // data: for base64 image placeholders; blob: for print preview
-  "img-src 'self' data: blob:",
+  // data: for base64 image placeholders; blob: for print preview; https: for food images from backend CDN
+  "img-src 'self' data: blob: https:",
   // All XHR/fetch goes to same origin via /api/* proxy
   "connect-src 'self'",
   // Service worker is served from the same origin

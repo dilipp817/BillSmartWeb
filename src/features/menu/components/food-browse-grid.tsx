@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { AlertCircle, Flame, Leaf, Search } from "lucide-react";
+import { AlertCircle, ArrowDownUp, Flame, Leaf, Search } from "lucide-react";
 
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,25 @@ import type { FoodListItem } from "../types";
 import { FoodCard } from "./food-card";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+type SortKey = "default" | "name" | "price_asc" | "price_desc";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "default", label: "Default" },
+  { key: "name", label: "A → Z" },
+  { key: "price_asc", label: "Price ↑" },
+  { key: "price_desc", label: "Price ↓" },
+];
+
+function sortFoods(foods: FoodListItem[], sort: SortKey): FoodListItem[] {
+  if (sort === "default") return foods;
+  return [...foods].sort((a, b) => {
+    if (sort === "name") return a.name.localeCompare(b.name);
+    if (sort === "price_asc") return a.price - b.price;
+    if (sort === "price_desc") return b.price - a.price;
+    return 0;
+  });
+}
 
 interface FoodBrowseGridProps {
   /** Called when the cashier taps + on a food card */
@@ -37,9 +56,18 @@ interface FoodBrowseGridProps {
  */
 export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodBrowseGridProps) {
   const [filters, setFilters] = useState<FoodBrowseFilters>(INITIAL_FOOD_BROWSE_FILTERS);
+  const [sort, setSort] = useState<SortKey>("default");
 
-  const { foods, pagination, categories, isFoodsLoading, isCategoriesLoading, isFoodsError } =
-    useFoodBrowse(filters);
+  const {
+    foods: rawFoods,
+    pagination,
+    categories,
+    isFoodsLoading,
+    isCategoriesLoading,
+    isFoodsError,
+  } = useFoodBrowse(filters);
+
+  const foods = sortFoods(rawFoods, sort);
 
   // ── Filter helpers ─────────────────────────────────────────────────────────
 
@@ -82,7 +110,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
           />
         </div>
 
-        {/* Veg / Spicy toggles */}
+        {/* Veg / Spicy toggles + Sort */}
         <div className="flex items-center gap-2">
           <ToggleChip
             active={filters.isVegetarian === true}
@@ -98,6 +126,26 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
             label="Spicy"
             activeClass="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
           />
+
+          {/* Sort buttons */}
+          <div className="ml-1 flex items-center gap-1 border-l pl-2">
+            <ArrowDownUp className="text-muted-foreground size-3.5 shrink-0" />
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setSort(opt.key)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                  sort === opt.key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -244,12 +292,14 @@ function FoodGridSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-card ring-foreground/10 rounded-xl p-4 ring-1">
-          <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
-          <div className="bg-muted mt-1.5 h-3 w-1/2 animate-pulse rounded" />
-          <div className="mt-4 flex items-center justify-between">
-            <div className="bg-muted h-5 w-16 animate-pulse rounded" />
-            <div className="bg-muted size-8 animate-pulse rounded-full" />
+        <div key={i} className="bg-card ring-foreground/10 overflow-hidden rounded-xl ring-1">
+          <div className="bg-muted h-28 w-full animate-pulse" />
+          <div className="p-3">
+            <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
+            <div className="mt-3 flex items-center justify-between">
+              <div className="bg-muted h-5 w-16 animate-pulse rounded" />
+              <div className="bg-muted size-8 animate-pulse rounded-full" />
+            </div>
           </div>
         </div>
       ))}
