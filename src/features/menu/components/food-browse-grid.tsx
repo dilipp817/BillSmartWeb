@@ -96,10 +96,10 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      {/* ── Filter bar ────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Search */}
-        <div className="relative w-full sm:w-64">
+      {/* ── Row 1: Search + diet toggles + sort ───────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Search — grows to fill available width */}
+        <div className="relative min-w-0 flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
           <Input
             type="search"
@@ -110,42 +110,37 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
           />
         </div>
 
-        {/* Veg / Spicy toggles + Sort */}
-        <div className="flex items-center gap-2">
-          <ToggleChip
-            active={filters.isVegetarian === true}
-            onClick={toggleVegetarian}
-            icon={<Leaf className="size-3.5" />}
-            label="Veg"
-            activeClass="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-          />
-          <ToggleChip
-            active={filters.isSpicy === true}
-            onClick={toggleSpicy}
-            icon={<Flame className="size-3.5" />}
-            label="Spicy"
-            activeClass="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
-          />
+        {/* Veg / Spicy toggles */}
+        <ToggleChip
+          active={filters.isVegetarian === true}
+          onClick={toggleVegetarian}
+          icon={<Leaf className="size-3.5" />}
+          label="Veg"
+          activeClass="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+        />
+        <ToggleChip
+          active={filters.isSpicy === true}
+          onClick={toggleSpicy}
+          icon={<Flame className="size-3.5" />}
+          label="Spicy"
+          activeClass="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
+        />
 
-          {/* Sort buttons */}
-          <div className="ml-1 flex items-center gap-1 border-l pl-2">
-            <ArrowDownUp className="text-muted-foreground size-3.5 shrink-0" />
+        {/* Sort — compact select */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          <ArrowDownUp className="text-muted-foreground size-3.5" />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="border-input bg-background text-foreground h-8 rounded-md border px-2 text-xs focus:outline-none"
+            aria-label="Sort items"
+          >
             {SORT_OPTIONS.map((opt) => (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => setSort(opt.key)}
-                className={cn(
-                  "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-                  sort === opt.key
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted"
-                )}
-              >
+              <option key={opt.key} value={opt.key}>
                 {opt.label}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
       </div>
 
