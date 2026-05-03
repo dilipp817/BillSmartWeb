@@ -140,12 +140,13 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
         </div>
       )}
 
-      {/* ── Food grid ─────────────────────────────────────────────────────── */}
+      {/* ── Food grid (grouped by category) ───────────────────────────────── */}
       {isFoodsLoading ? (
         <FoodGridSkeleton />
       ) : foods.length === 0 && !isFoodsError ? (
         <p className="text-muted-foreground py-10 text-center text-sm">No items found.</p>
-      ) : (
+      ) : filters.categoryId !== null ? (
+        // Single category selected — no header needed, flat grid
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {foods.map((food) => (
             <FoodCard
@@ -156,6 +157,9 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
             />
           ))}
         </div>
+      ) : (
+        // "All" — group by category_name with bold section headers
+        <FoodGroupedGrid foods={foods} onAddToCart={onAddToCart} cartQuantities={cartQuantities} />
       )}
 
       {/* ── Pagination ────────────────────────────────────────────────────── */}
@@ -184,6 +188,52 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Grouped Grid ────────────────────────────────────────────────────────────
+
+interface FoodGroupedGridProps {
+  foods: FoodListItem[];
+  onAddToCart: (food: FoodListItem) => void;
+  cartQuantities?: Record<number, number>;
+}
+
+function FoodGroupedGrid({ foods, onAddToCart, cartQuantities }: FoodGroupedGridProps) {
+  // Preserve backend order while grouping by category_name
+  const groups: { categoryName: string; items: FoodListItem[] }[] = [];
+  const seen = new Map<string, FoodListItem[]>();
+
+  for (const food of foods) {
+    const name = food.category_name ?? "Uncategorised";
+    if (!seen.has(name)) {
+      const arr: FoodListItem[] = [];
+      seen.set(name, arr);
+      groups.push({ categoryName: name, items: arr });
+    }
+    seen.get(name)!.push(food);
+  }
+
+  return (
+    <div className="space-y-6">
+      {groups.map(({ categoryName, items }) => (
+        <section key={categoryName}>
+          <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
+            {categoryName}
+          </h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {items.map((food) => (
+              <FoodCard
+                key={food.id}
+                food={food}
+                onAdd={onAddToCart}
+                quantity={cartQuantities?.[food.id]}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
