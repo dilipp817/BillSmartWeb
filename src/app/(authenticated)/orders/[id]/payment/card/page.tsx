@@ -13,7 +13,7 @@ import { useProcessPayment } from "@/features/billing/hooks/use-process-payment"
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ paymentId?: string; amount?: string; tableId?: string }>;
+  searchParams: Promise<{ paymentId?: string; amount?: string; billId?: string; tableId?: string }>;
 }
 
 export default function CardPaymentPage({ params, searchParams }: PageProps) {
@@ -21,12 +21,21 @@ export default function CardPaymentPage({ params, searchParams }: PageProps) {
   const {
     paymentId: paymentIdParam,
     amount: amountParam,
+    billId: billIdParam,
     tableId: tableIdParam,
   } = use(searchParams);
 
   const orderId = Number(id);
   const paymentId = paymentIdParam ? Number(paymentIdParam) : null;
   const tableId = tableIdParam ? Number(tableIdParam) : undefined;
+
+  // Build back link preserving all URL context so a retry re-links to the bill.
+  const backParams = new URLSearchParams();
+  if (billIdParam) backParams.set("billId", billIdParam);
+  if (amountParam) backParams.set("amount", amountParam);
+  if (tableIdParam) backParams.set("tableId", tableIdParam);
+  const backParamsStr = backParams.toString();
+  const backHref = `/orders/${orderId}/payment${backParamsStr ? `?${backParamsStr}` : ""}`;
 
   const { processCardPayment, isPending, isError, errorMessage } = useProcessPayment(
     orderId,
@@ -39,7 +48,7 @@ export default function CardPaymentPage({ params, searchParams }: PageProps) {
     return (
       <div className="mx-auto max-w-lg space-y-6">
         <div className="flex items-center gap-3">
-          <Link href={`/orders/${orderId}/payment`}>
+          <Link href={backHref}>
             <Button variant="ghost" size="icon" aria-label="Go back">
               <ArrowLeft className="size-4" />
             </Button>
@@ -58,7 +67,7 @@ export default function CardPaymentPage({ params, searchParams }: PageProps) {
     <div className="mx-auto max-w-lg space-y-6">
       {/* ── Header ────────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
-        <Link href={`/orders/${orderId}/payment`}>
+        <Link href={backHref}>
           <Button variant="ghost" size="icon" aria-label="Go back">
             <ArrowLeft className="size-4" />
           </Button>

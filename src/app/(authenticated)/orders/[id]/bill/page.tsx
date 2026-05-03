@@ -96,7 +96,7 @@ export default function GenerateBillPage({ params, searchParams }: PageProps) {
           />
 
           <Link
-            href={`/orders/${orderId}/payment?billId=${bill.id}${tableId ? `&tableId=${tableId}` : ""}`}
+            href={`/orders/${orderId}/payment?billId=${bill.id}&amount=${bill.remaining_amount}${tableId ? `&tableId=${tableId}` : ""}`}
           >
             <Button className="w-full" size="lg">
               Proceed to Payment

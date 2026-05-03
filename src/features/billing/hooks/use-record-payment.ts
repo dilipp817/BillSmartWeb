@@ -83,7 +83,7 @@ export function useRecordPayment(
 
       return createPayment(request);
     },
-    onSuccess: (payment) => {
+    onSuccess: (payment, variables) => {
       const billQuery = payment.bill_id ? `&billId=${payment.bill_id}` : "";
       const tableQuery = tableId ? `&tableId=${tableId}` : "";
       if (payment.status === PaymentStatus.SUCCESS) {
@@ -94,7 +94,7 @@ export function useRecordPayment(
       } else {
         // CARD — PENDING, hand off to B-06 card flow
         router.push(
-          `/orders/${orderId}/payment/card?paymentId=${payment.id}${billQuery}${tableQuery}`
+          `/orders/${orderId}/payment/card?paymentId=${payment.id}&amount=${variables.amount}${billQuery}${tableQuery}`
         );
       }
     },
