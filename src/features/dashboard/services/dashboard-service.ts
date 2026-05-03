@@ -11,5 +11,5 @@ export async function getPendingOrderCount(restaurantId: number): Promise<number
   const response = await apiClient.get<ApiResponse<PendingOrderCountDto>>(
     `/v1/restaurants/${restaurantId}/orders/count/pending`
   );
-  return response.data.data.count;
+  return response.data.data.pending_count;
 }
