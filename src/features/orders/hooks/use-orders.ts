@@ -82,10 +82,14 @@ export function useOrders({ filter = "all", search = "" }: UseOrdersOptions = {}
       )
     : (data?.orders ?? []);
 
+  // Treat restaurantId not yet loaded as a loading state so the empty-state
+  // never flashes before the query has had a chance to run.
+  const effectivelyLoading = restaurantId === null || isLoading;
+
   return {
     orders: filteredOrders,
     total: filteredOrders.length,
-    isLoading,
+    isLoading: effectivelyLoading,
     isError,
     refetch,
   };
