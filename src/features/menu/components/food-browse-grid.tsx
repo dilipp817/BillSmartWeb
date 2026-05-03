@@ -21,6 +21,8 @@ import { FoodCard } from "./food-card";
 interface FoodBrowseGridProps {
   /** Called when the cashier taps + on a food card */
   onAddToCart: (food: FoodListItem) => void;
+  /** Map of foodId → quantity currently in cart, for selection state */
+  cartQuantities?: Record<number, number>;
   className?: string;
 }
 
@@ -33,7 +35,7 @@ interface FoodBrowseGridProps {
  * Used by the Create Order flow (O-07). Manages its own filter state internally;
  * surfaces only the selected food via onAddToCart.
  */
-export function FoodBrowseGrid({ onAddToCart, className }: FoodBrowseGridProps) {
+export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodBrowseGridProps) {
   const [filters, setFilters] = useState<FoodBrowseFilters>(INITIAL_FOOD_BROWSE_FILTERS);
 
   const { foods, pagination, categories, isFoodsLoading, isCategoriesLoading, isFoodsError } =
@@ -101,14 +103,14 @@ export function FoodBrowseGrid({ onAddToCart, className }: FoodBrowseGridProps) 
 
       {/* ── Category tabs ──────────────────────────────────────────────────── */}
       {!isCategoriesLoading && categories.length > 0 && (
-        <div className="flex flex-wrap gap-1">
+        <div className="scrollbar-none -mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
           <button
             type="button"
             onClick={() => setCategory(null)}
             className={
               filters.categoryId === null
-                ? "bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
-                : "text-muted-foreground hover:bg-muted rounded-md px-3 py-1.5 text-sm transition-colors"
+                ? "bg-primary text-primary-foreground shrink-0 rounded-full px-3 py-1.5 text-sm font-medium"
+                : "text-muted-foreground hover:bg-muted shrink-0 rounded-full px-3 py-1.5 text-sm transition-colors"
             }
           >
             All
@@ -120,8 +122,8 @@ export function FoodBrowseGrid({ onAddToCart, className }: FoodBrowseGridProps) 
               onClick={() => setCategory(cat.id)}
               className={
                 filters.categoryId === cat.id
-                  ? "bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium"
-                  : "text-muted-foreground hover:bg-muted rounded-md px-3 py-1.5 text-sm transition-colors"
+                  ? "bg-primary text-primary-foreground shrink-0 rounded-full px-3 py-1.5 text-sm font-medium"
+                  : "text-muted-foreground hover:bg-muted shrink-0 rounded-full px-3 py-1.5 text-sm transition-colors"
               }
             >
               {cat.name}
@@ -146,7 +148,12 @@ export function FoodBrowseGrid({ onAddToCart, className }: FoodBrowseGridProps) 
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {foods.map((food) => (
-            <FoodCard key={food.id} food={food} onAdd={onAddToCart} />
+            <FoodCard
+              key={food.id}
+              food={food}
+              onAdd={onAddToCart}
+              quantity={cartQuantities?.[food.id]}
+            />
           ))}
         </div>
       )}

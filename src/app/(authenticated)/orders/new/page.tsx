@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { AlertCircle, Loader2, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { AlertCircle, Loader2, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 
 import { OrderType } from "@/constants";
 import { Button } from "@/components/ui/button";
@@ -49,13 +49,18 @@ export default function CreateOrderPage() {
   const runningTotal = cartRunningTotal(items);
   const canSubmit = items.length > 0 && !isPending;
 
+  /** Map of foodId → quantity for FoodCard selection state */
+  const cartQuantities: Record<number, number> = Object.fromEntries(
+    items.map((item) => [item.id, item.quantity])
+  );
+
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-full gap-6">
       {/* ── Left: Food Browse ─────────────────────────────────────────────── */}
       <div className="min-w-0 flex-1 overflow-y-auto">
         <h1 className="mb-4 text-xl font-semibold">New Order</h1>
-        <FoodBrowseGrid onAddToCart={handleAddToCart} />
+        <FoodBrowseGrid onAddToCart={handleAddToCart} cartQuantities={cartQuantities} />
       </div>
 
       {/* ── Right: Cart Panel ─────────────────────────────────────────────── */}
@@ -85,6 +90,34 @@ export default function CreateOrderPage() {
                 </span>
               )}
             </h2>
+            {items.length > 0 && (
+              <button
+                type="button"
+                onClick={() => useCartStore.getState().clearCart()}
+                className="text-muted-foreground hover:text-destructive flex items-center gap-1 text-xs transition-colors"
+                aria-label="Clear cart"
+              >
+                <X className="size-3.5" />
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Order type badge */}
+          <div className="mb-3">
+            <span
+              className={
+                orderType === OrderType.DINE_IN
+                  ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                  : "inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800"
+              }
+            >
+              {orderType === OrderType.DINE_IN
+                ? tableId !== null
+                  ? `Dine In · Table ${tableId}`
+                  : "Dine In"
+                : "Takeaway"}
+            </span>
           </div>
 
           {items.length === 0 ? (
