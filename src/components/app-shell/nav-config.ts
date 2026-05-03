@@ -3,7 +3,6 @@ import {
   BarChart3,
   ClipboardList,
   LayoutDashboard,
-  Receipt,
   Settings,
   TableProperties,
   Tag,
@@ -34,12 +33,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/orders",
     label: "Orders",
     icon: ClipboardList,
-    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
-  },
-  {
-    href: "/billing",
-    label: "Billing",
-    icon: Receipt,
     roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
