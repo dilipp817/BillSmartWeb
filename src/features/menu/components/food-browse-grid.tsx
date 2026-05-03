@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { AlertCircle, ArrowDownUp, Flame, Leaf, Search } from "lucide-react";
 
-import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { MAX_PAGE_SIZE } from "@/constants";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -20,22 +20,12 @@ import { FoodCard } from "./food-card";
 
 type SortKey = "default" | "name" | "price_asc" | "price_desc";
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+const SORT_OPTIONS: { key: SortKey; label: string; apiValue?: string }[] = [
   { key: "default", label: "Default" },
-  { key: "name", label: "A → Z" },
-  { key: "price_asc", label: "Price ↑" },
-  { key: "price_desc", label: "Price ↓" },
+  { key: "name", label: "A → Z", apiValue: "name:asc" },
+  { key: "price_asc", label: "Price ↑", apiValue: "price:asc" },
+  { key: "price_desc", label: "Price ↓", apiValue: "price:desc" },
 ];
-
-function sortFoods(foods: FoodListItem[], sort: SortKey): FoodListItem[] {
-  if (sort === "default") return foods;
-  return [...foods].sort((a, b) => {
-    if (sort === "name") return a.name.localeCompare(b.name);
-    if (sort === "price_asc") return a.price - b.price;
-    if (sort === "price_desc") return b.price - a.price;
-    return 0;
-  });
-}
 
 interface FoodBrowseGridProps {
   /** Called when the cashier taps + on a food card */
@@ -56,18 +46,12 @@ interface FoodBrowseGridProps {
  */
 export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodBrowseGridProps) {
   const [filters, setFilters] = useState<FoodBrowseFilters>(INITIAL_FOOD_BROWSE_FILTERS);
-  const [sort, setSort] = useState<SortKey>("default");
 
-  const {
-    foods: rawFoods,
-    pagination,
-    categories,
-    isFoodsLoading,
-    isCategoriesLoading,
-    isFoodsError,
-  } = useFoodBrowse(filters);
+  const { foods, pagination, categories, isFoodsLoading, isCategoriesLoading, isFoodsError } =
+    useFoodBrowse(filters);
 
-  const foods = sortFoods(rawFoods, sort);
+  // Filter inactive categories client-side — backend returns all, per mobile master §7
+  const activeCategories = categories.filter((c) => c.is_active);
 
   // ── Filter helpers ─────────────────────────────────────────────────────────
 
@@ -89,6 +73,21 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
       isSpicy: prev.isSpicy === true ? null : true,
       offset: 0,
     }));
+
+  const setSort = (key: SortKey) => {
+    const apiValue = SORT_OPTIONS.find((o) => o.key === key)?.apiValue;
+    setFilters((prev) => ({ ...prev, sort: apiValue, offset: 0 }));
+  };
+
+  // Derive current SortKey from the API sort string stored in filters
+  const currentSortKey: SortKey =
+    filters.sort === "name:asc"
+      ? "name"
+      : filters.sort === "price:asc"
+        ? "price_asc"
+        : filters.sort === "price:desc"
+          ? "price_desc"
+          : "default";
 
   const goToPage = (newOffset: number) => setFilters((prev) => ({ ...prev, offset: newOffset }));
 
@@ -130,7 +129,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
         <div className="flex shrink-0 items-center gap-1.5">
           <ArrowDownUp className="text-muted-foreground size-3.5" />
           <select
-            value={sort}
+            value={currentSortKey}
             onChange={(e) => setSort(e.target.value as SortKey)}
             className="border-input bg-background text-foreground h-8 rounded-md border px-2 text-xs focus:outline-none"
             aria-label="Sort items"
@@ -145,7 +144,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
       </div>
 
       {/* ── Category tabs ──────────────────────────────────────────────────── */}
-      {!isCategoriesLoading && categories.length > 0 && (
+      {!isCategoriesLoading && activeCategories.length > 0 && (
         <div className="scrollbar-none -mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
           <button
             type="button"
@@ -158,7 +157,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
           >
             All
           </button>
-          {categories.map((cat) => (
+          {activeCategories.map((cat) => (
             <button
               key={cat.id}
               type="button"
@@ -215,7 +214,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
             <button
               type="button"
               disabled={!pagination.has_previous}
-              onClick={() => goToPage(filters.offset - DEFAULT_PAGE_SIZE)}
+              onClick={() => goToPage(filters.offset - MAX_PAGE_SIZE)}
               className="hover:bg-muted disabled:text-muted-foreground rounded-md px-3 py-1.5 transition-colors disabled:cursor-not-allowed"
             >
               Previous
@@ -223,7 +222,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
             <button
               type="button"
               disabled={!pagination.has_next}
-              onClick={() => goToPage(filters.offset + DEFAULT_PAGE_SIZE)}
+              onClick={() => goToPage(filters.offset + MAX_PAGE_SIZE)}
               className="hover:bg-muted disabled:text-muted-foreground rounded-md px-3 py-1.5 transition-colors disabled:cursor-not-allowed"
             >
               Next
