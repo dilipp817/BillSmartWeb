@@ -56,173 +56,182 @@ export default function CreateOrderPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-full gap-6">
+    <div className="flex h-full gap-4 lg:gap-6">
       {/* ── Left: Food Browse ─────────────────────────────────────────────── */}
       <div className="min-w-0 flex-1 overflow-y-auto">
         <h1 className="mb-4 text-xl font-semibold">New Order</h1>
         <FoodBrowseGrid onAddToCart={handleAddToCart} cartQuantities={cartQuantities} />
       </div>
 
-      {/* ── Right: Cart Panel ─────────────────────────────────────────────── */}
-      <aside className="flex w-80 shrink-0 flex-col gap-4 overflow-y-auto">
-        {/* Table selection — feature-flagged; hidden entirely when flag off */}
+      {/* ── Right: Cart Panel — always full height, Place Order never scrolls away ── */}
+      <aside className="flex w-72 shrink-0 flex-col lg:w-80 xl:w-96">
+        {/* Table selection — feature-flagged */}
         {isTableManagementEnabled && (
-          <div>
+          <div className="mb-4 shrink-0">
             <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
               Table
             </p>
             <TableSelectionGrid selectedTableId={tableId} onSelect={handleTableSelect} />
-            {orderType === OrderType.TAKEAWAY && (
-              <p className="text-muted-foreground mt-1 text-xs">Takeaway order</p>
-            )}
           </div>
         )}
 
-        {/* Cart items */}
-        <div className="bg-card ring-foreground/10 flex-1 rounded-xl p-4 ring-1">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-semibold">
-              <ShoppingCart className="size-4" />
-              Cart
-              {totalItems > 0 && (
-                <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
-                  {totalItems}
-                </span>
+        {/* Cart card — fills remaining height, items scroll inside */}
+        <div className="bg-card ring-foreground/10 flex min-h-0 flex-1 flex-col rounded-xl ring-1">
+          {/* Cart header — always visible */}
+          <div className="shrink-0 border-b px-4 py-3">
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-semibold">
+                <ShoppingCart className="size-4" />
+                Cart
+                {totalItems > 0 && (
+                  <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                    {totalItems}
+                  </span>
+                )}
+              </h2>
+              {items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => useCartStore.getState().clearCart()}
+                  className="text-muted-foreground hover:text-destructive flex items-center gap-1 text-xs transition-colors"
+                  aria-label="Clear cart"
+                >
+                  <X className="size-3.5" />
+                  Clear
+                </button>
               )}
-            </h2>
-            {items.length > 0 && (
-              <button
-                type="button"
-                onClick={() => useCartStore.getState().clearCart()}
-                className="text-muted-foreground hover:text-destructive flex items-center gap-1 text-xs transition-colors"
-                aria-label="Clear cart"
+            </div>
+
+            {/* Order type badge */}
+            <div className="mt-2">
+              <span
+                className={
+                  orderType === OrderType.DINE_IN
+                    ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
+                    : "inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800"
+                }
               >
-                <X className="size-3.5" />
-                Clear
-              </button>
-            )}
+                {orderType === OrderType.DINE_IN
+                  ? tableId !== null
+                    ? `Dine In · Table ${tableId}`
+                    : "Dine In"
+                  : "Takeaway"}
+              </span>
+            </div>
           </div>
 
-          {/* Order type badge */}
-          <div className="mb-3">
-            <span
-              className={
-                orderType === OrderType.DINE_IN
-                  ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800"
-                  : "inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800"
-              }
-            >
-              {orderType === OrderType.DINE_IN
-                ? tableId !== null
-                  ? `Dine In · Table ${tableId}`
-                  : "Dine In"
-                : "Takeaway"}
-            </span>
-          </div>
-
-          {items.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">No items added yet.</p>
-          ) : (
-            <ul className="divide-y">
-              {items.map((item) => (
-                <li key={item.id} className="py-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm leading-snug font-medium">{item.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="text-muted-foreground hover:text-destructive shrink-0 transition-colors"
-                      aria-label={`Remove ${item.name}`}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Qty controls */}
-                  <div className="mt-1.5 flex items-center justify-between">
-                    <div className="flex items-center gap-1">
+          {/* Items list — this is the only part that scrolls */}
+          <div className="min-h-0 flex-1 overflow-y-auto px-4">
+            {items.length === 0 ? (
+              <p className="text-muted-foreground py-6 text-center text-sm">No items added yet.</p>
+            ) : (
+              <ul className="divide-y">
+                {items.map((item) => (
+                  <li key={item.id} className="py-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-sm leading-snug font-medium">{item.name}</span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="bg-muted hover:bg-muted/80 flex size-6 items-center justify-center rounded transition-colors"
-                        aria-label="Decrease quantity"
+                        onClick={() => removeItem(item.id)}
+                        className="text-muted-foreground hover:text-destructive shrink-0 transition-colors"
+                        aria-label={`Remove ${item.name}`}
                       >
-                        <Minus className="size-3" />
-                      </button>
-                      <span className="w-6 text-center text-sm tabular-nums">{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="bg-muted hover:bg-muted/80 flex size-6 items-center justify-center rounded transition-colors"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus className="size-3" />
+                        <Trash2 className="size-3.5" />
                       </button>
                     </div>
-                    <span className="text-sm font-medium">
-                      {formatCurrency(item.price * item.quantity)}
-                    </span>
-                  </div>
 
-                  {/* Special request */}
-                  <Input
-                    type="text"
-                    placeholder="Special request…"
-                    value={item.special_requests}
-                    onChange={(e) => setSpecialRequest(item.id, e.target.value)}
-                    className="mt-1.5 h-7 text-xs"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                    {/* Qty controls */}
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="bg-muted hover:bg-muted/80 flex size-6 items-center justify-center rounded transition-colors"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="size-3" />
+                        </button>
+                        <span className="w-6 text-center text-sm tabular-nums">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="bg-muted hover:bg-muted/80 flex size-6 items-center justify-center rounded transition-colors"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="size-3" />
+                        </button>
+                      </div>
+                      <span className="text-sm font-medium">
+                        {formatCurrency(item.price * item.quantity)}
+                      </span>
+                    </div>
 
-        {/* Notes */}
-        <div>
-          <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-            Order Notes
-          </p>
-          <Input
-            type="text"
-            placeholder="e.g. Window seat please"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
+                    {/* Special request */}
+                    <Input
+                      type="text"
+                      placeholder="Special request…"
+                      value={item.special_requests}
+                      onChange={(e) => setSpecialRequest(item.id, e.target.value)}
+                      className="mt-1.5 h-7 text-xs"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        {/* Running total */}
-        {items.length > 0 && (
-          <div className="bg-muted rounded-lg px-4 py-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal (excl. tax)</span>
-              <span className="font-semibold">{formatCurrency(runningTotal)}</span>
+          {/* Cart footer — always pinned at bottom, never scrolls away */}
+          <div className="shrink-0 space-y-3 border-t px-4 py-3">
+            {/* Notes */}
+            <div>
+              <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+                Order Notes
+              </p>
+              <Input
+                type="text"
+                placeholder="e.g. Window seat please"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="h-8 text-sm"
+              />
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Tax (CGST + SGST) calculated at billing
-            </p>
-          </div>
-        )}
 
-        {/* Error */}
-        {isError && errorMessage && (
-          <div className="text-destructive flex items-center gap-2 text-sm">
-            <AlertCircle className="size-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
+            {/* Running total */}
+            {items.length > 0 && (
+              <div className="bg-muted rounded-lg px-3 py-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal (excl. tax)</span>
+                  <span className="font-semibold">{formatCurrency(runningTotal)}</span>
+                </div>
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  Tax (CGST + SGST) calculated at billing
+                </p>
+              </div>
+            )}
 
-        {/* Place Order */}
-        <Button onClick={handleSubmit} disabled={!canSubmit} className="w-full">
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              Placing Order…
-            </>
-          ) : (
-            "Place Order"
-          )}
-        </Button>
+            {/* Error */}
+            {isError && errorMessage && (
+              <div className="text-destructive flex items-center gap-2 text-sm">
+                <AlertCircle className="size-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Place Order */}
+            <Button onClick={handleSubmit} disabled={!canSubmit} className="w-full">
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Placing Order…
+                </>
+              ) : (
+                "Place Order"
+              )}
+            </Button>
+          </div>
+        </div>
       </aside>
     </div>
   );
