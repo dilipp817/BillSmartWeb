@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { UserRole } from "@/constants";
 import { DeleteFoodDialog } from "@/features/menu/components/delete-food-dialog";
 import { MenuFilterBar } from "@/features/menu/components/menu-filter-bar";
-import { MenuFoodRow } from "@/features/menu/components/menu-food-row";
+import { MenuFoodCard } from "@/features/menu/components/menu-food-card";
 import { useMenuManagement } from "@/features/menu/hooks/use-menu-management";
 import { DEFAULT_PAGE_SIZE } from "@/constants";
 import type { FoodListItem } from "@/features/menu/types";
@@ -81,36 +81,21 @@ export default function MenuPage() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Grid */}
         {isFoodsLoading ? (
-          <MenuTableSkeleton />
+          <MenuGridSkeleton />
         ) : foods.length === 0 && !isFoodsError ? (
           <EmptyState search={filters.search} />
         ) : (
-          <div className="rounded-xl border">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-muted/50 border-b">
-                    <th className="px-4 py-3 text-sm font-medium">Name</th>
-                    <th className="px-4 py-3 text-sm font-medium">Category</th>
-                    <th className="px-4 py-3 text-sm font-medium">Price</th>
-                    <th className="px-4 py-3 text-sm font-medium">Status</th>
-                    <th className="px-4 py-3 text-sm font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {foods.map((food) => (
-                    <MenuFoodRow
-                      key={food.id}
-                      food={food}
-                      onDelete={setFoodToDelete}
-                      isDeleting={isDeleting && deletingFoodId === food.id}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {foods.map((food) => (
+              <MenuFoodCard
+                key={food.id}
+                food={food}
+                onDelete={setFoodToDelete}
+                isDeleting={isDeleting && deletingFoodId === food.id}
+              />
+            ))}
           </div>
         )}
 
@@ -157,33 +142,21 @@ export default function MenuPage() {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function MenuTableSkeleton() {
+function MenuGridSkeleton() {
   return (
-    <div className="rounded-xl border">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-muted/50 border-b">
-              {["Name", "Category", "Price", "Status", "Actions"].map((h) => (
-                <th key={h} className="px-4 py-3 text-sm font-medium">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <tr key={i} className="border-b last:border-0">
-                {Array.from({ length: 5 }).map((__, j) => (
-                  <td key={j} className="px-4 py-3">
-                    <div className="bg-muted h-4 animate-pulse rounded" />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="bg-card ring-foreground/10 flex flex-col rounded-xl p-4 ring-1">
+          <div className="bg-muted h-4 w-3/4 animate-pulse rounded" />
+          <div className="bg-muted mt-2 h-3 w-1/2 animate-pulse rounded" />
+          <div className="bg-muted mt-3 h-5 w-1/3 animate-pulse rounded" />
+          <div className="bg-muted mt-2 h-5 w-16 animate-pulse rounded-full" />
+          <div className="mt-3 flex gap-2 border-t pt-3">
+            <div className="bg-muted h-8 flex-1 animate-pulse rounded" />
+            <div className="bg-muted h-8 w-8 animate-pulse rounded" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
