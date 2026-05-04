@@ -30,6 +30,8 @@ const SORT_OPTIONS: { key: SortKey; label: string; apiValue?: string }[] = [
 interface FoodBrowseGridProps {
   /** Called when the cashier taps + on a food card */
   onAddToCart: (food: FoodListItem) => void;
+  /** Called when the cashier taps − on a food card (quantity goes to 0 → removed). Optional — omit when the grid is used outside a cart context. */
+  onRemoveFromCart?: (food: FoodListItem) => void;
   /** Map of foodId → quantity currently in cart, for selection state */
   cartQuantities?: Record<number, number>;
   className?: string;
@@ -44,7 +46,12 @@ interface FoodBrowseGridProps {
  * Used by the Create Order flow (O-07). Manages its own filter state internally;
  * surfaces only the selected food via onAddToCart.
  */
-export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodBrowseGridProps) {
+export function FoodBrowseGrid({
+  onAddToCart,
+  onRemoveFromCart = () => {},
+  cartQuantities,
+  className,
+}: FoodBrowseGridProps) {
   const [filters, setFilters] = useState<FoodBrowseFilters>(INITIAL_FOOD_BROWSE_FILTERS);
 
   const { foods, pagination, categories, isFoodsLoading, isCategoriesLoading, isFoodsError } =
@@ -94,7 +101,7 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
+    <div className={cn("relative flex flex-col gap-4", className)}>
       {/* ── Row 1: Search + diet toggles + sort ───────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Search — grows to fill available width */}
@@ -124,23 +131,6 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
           label="Spicy"
           activeClass="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
         />
-
-        {/* Sort — compact select */}
-        <div className="flex shrink-0 items-center gap-1.5">
-          <ArrowDownUp className="text-muted-foreground size-3.5" />
-          <select
-            value={currentSortKey}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className="border-input bg-background text-foreground h-8 rounded-md border px-2 text-xs focus:outline-none"
-            aria-label="Sort items"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.key} value={opt.key}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
       {/* ── Category tabs ──────────────────────────────────────────────────── */}
@@ -195,13 +185,19 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
               key={food.id}
               food={food}
               onAdd={onAddToCart}
+              onRemove={onRemoveFromCart}
               quantity={cartQuantities?.[food.id]}
             />
           ))}
         </div>
       ) : (
         // "All" — group by category_name with bold section headers
-        <FoodGroupedGrid foods={foods} onAddToCart={onAddToCart} cartQuantities={cartQuantities} />
+        <FoodGroupedGrid
+          foods={foods}
+          onAddToCart={onAddToCart}
+          onRemoveFromCart={onRemoveFromCart}
+          cartQuantities={cartQuantities}
+        />
       )}
 
       {/* ── Pagination ────────────────────────────────────────────────────── */}
@@ -230,6 +226,9 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
           </div>
         </div>
       )}
+
+      {/* ── Floating sort button ──────────────────────────────────────────── */}
+      <SortFloatingButton currentSortKey={currentSortKey} onSort={setSort} />
     </div>
   );
 }
@@ -239,10 +238,16 @@ export function FoodBrowseGrid({ onAddToCart, cartQuantities, className }: FoodB
 interface FoodGroupedGridProps {
   foods: FoodListItem[];
   onAddToCart: (food: FoodListItem) => void;
+  onRemoveFromCart: (food: FoodListItem) => void;
   cartQuantities?: Record<number, number>;
 }
 
-function FoodGroupedGrid({ foods, onAddToCart, cartQuantities }: FoodGroupedGridProps) {
+function FoodGroupedGrid({
+  foods,
+  onAddToCart,
+  onRemoveFromCart,
+  cartQuantities,
+}: FoodGroupedGridProps) {
   // Preserve backend order while grouping by category_name
   const groups: { categoryName: string; items: FoodListItem[] }[] = [];
   const seen = new Map<string, FoodListItem[]>();
@@ -270,6 +275,7 @@ function FoodGroupedGrid({ foods, onAddToCart, cartQuantities }: FoodGroupedGrid
                 key={food.id}
                 food={food}
                 onAdd={onAddToCart}
+                onRemove={onRemoveFromCart}
                 quantity={cartQuantities?.[food.id]}
               />
             ))}
@@ -324,5 +330,67 @@ function ToggleChip({ active, onClick, icon, label, activeClass }: ToggleChipPro
       {icon}
       {label}
     </button>
+  );
+}
+
+// ─── Sort Floating Button ─────────────────────────────────────────────────────
+
+interface SortFloatingButtonProps {
+  currentSortKey: SortKey;
+  onSort: (key: SortKey) => void;
+}
+
+/**
+ * Floating sort button — renders at bottom-center of the food browse panel.
+ * Shows current sort label; opens an inline popover with all sort options on click.
+ * Matches the Android POS "floating sort" pattern.
+ */
+function SortFloatingButton({ currentSortKey, onSort }: SortFloatingButtonProps) {
+  const [open, setOpen] = useState(false);
+  const currentLabel = SORT_OPTIONS.find((o) => o.key === currentSortKey)?.label ?? "Default";
+
+  return (
+    <div className="pointer-events-none sticky bottom-4 flex justify-center">
+      <div className="pointer-events-auto relative">
+        {/* Sort options popover — opens upward */}
+        {open && (
+          <div className="bg-popover text-popover-foreground absolute bottom-full left-1/2 mb-2 w-36 -translate-x-1/2 overflow-hidden rounded-xl shadow-lg ring-1 ring-black/5">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  onSort(opt.key);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center px-4 py-2.5 text-sm transition-colors",
+                  opt.key === currentSortKey
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "hover:bg-muted"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Trigger pill */}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className={cn(
+            "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-md transition-all",
+            currentSortKey !== "default"
+              ? "bg-primary text-primary-foreground"
+              : "bg-card text-foreground ring-1 ring-black/10"
+          )}
+        >
+          <ArrowDownUp className="size-3.5" />
+          Sort: {currentLabel}
+        </button>
+      </div>
+    </div>
   );
 }

@@ -58,7 +58,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
     <div className="mx-auto max-w-lg space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/menu">
+        <Link href="/menu/management">
           <Button variant="ghost" size="icon" aria-label="Back to menu">
             <ArrowLeft className="size-4" />
           </Button>
@@ -71,7 +71,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
         <div className="bg-muted rounded-lg p-3 text-sm">
           Editing is not available yet — the backend update endpoint is pending. You can view and
           delete items from the{" "}
-          <Link href="/menu" className="text-primary underline underline-offset-4">
+          <Link href="/menu/management" className="text-primary underline underline-offset-4">
             Menu
           </Link>{" "}
           screen.
@@ -231,7 +231,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
               "Save"
             )}
           </Button>
-          <Link href="/menu">
+          <Link href="/menu/management">
             <Button type="button" variant="outline" disabled={isSubmitting}>
               Cancel
             </Button>

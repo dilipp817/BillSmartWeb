@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import type { AxiosError } from "axios";
 
 import { queryClient } from "@/lib/query-client";
 import { useAuthStore } from "@/store/use-auth-store";
 import { toCreateOrderItems, useCartStore } from "@/store/use-cart-store";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { OrderType } from "@/constants";
+import type { ApiErrorResponse } from "@/types";
 
 import { createOrder } from "../services/order-service";
 import { enqueueOrder } from "./use-offline-order-queue";
@@ -20,12 +23,14 @@ interface UseCreateOrderResult {
   /**
    * Submit the current cart as a new order.
    * Optionally pass a free-text notes string (e.g. "Window seat please").
+   * Optionally pass a discount amount (MANAGER/ADMIN only) — when provided,
+   * navigates directly to /orders/{id}/bill?discount={discount} after creation.
    * Does nothing if the cart is empty or restaurantId is not available.
    *
    * When offline + is_offline_order_sync_enabled=true: queues to IndexedDB.
    * When offline + flag=false: sets an error state.
    */
-  submitOrder: (notes?: string) => void;
+  submitOrder: (notes?: string, discount?: number) => void;
   isPending: boolean;
   isError: boolean;
   errorMessage: string | null;
@@ -58,6 +63,7 @@ export function useCreateOrder(): UseCreateOrderResult {
   const [isQueuingOffline, setIsQueuingOffline] = useState(false);
   const [offlineError, setOfflineError] = useState<string | null>(null);
   const [isOfflineQueued, setIsOfflineQueued] = useState(false);
+  const [pendingDiscount, setPendingDiscount] = useState<number | undefined>(undefined);
 
   const mutation = useMutation({
     mutationFn: (notes: string | undefined) => {
@@ -75,9 +81,23 @@ export function useCreateOrder(): UseCreateOrderResult {
       clearCart();
       // Invalidate all order queries so the order list reflects the new order
       queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
-      router.push(`/orders/${order.id}`);
+      // When a discount was set by a MANAGER/ADMIN, go straight to bill generation
+      if (pendingDiscount !== undefined && pendingDiscount > 0) {
+        router.push(`/orders/${order.id}/bill?discount=${pendingDiscount}`);
+      } else {
+        router.push(`/orders/${order.id}`);
+      }
     },
   });
+
+  /** Extract a human-readable message from an Axios 4xx/5xx error. */
+  function extractApiError(err: unknown): string {
+    const axiosErr = err as AxiosError<ApiErrorResponse>;
+    const apiMessage = axiosErr.response?.data?.error?.message;
+    if (apiMessage) return apiMessage;
+    if (axiosErr.message) return axiosErr.message;
+    return "Failed to place order. Please try again.";
+  }
 
   const handleOfflineQueue = async (notes?: string) => {
     if (!restaurantId) return;
@@ -100,8 +120,16 @@ export function useCreateOrder(): UseCreateOrderResult {
     }
   };
 
-  const submitOrder = (notes?: string) => {
+  const submitOrder = (notes?: string, discount?: number) => {
     if (items.length === 0 || !restaurantId || mutation.isPending || isQueuingOffline) return;
+
+    // DINE_IN requires a table to be selected
+    if (orderType === OrderType.DINE_IN && tableId === null) {
+      setOfflineError("Please select a table for a Dine In order.");
+      return;
+    }
+
+    setPendingDiscount(discount);
 
     if (!isOnline) {
       if (isOfflineSyncEnabled) {
@@ -116,8 +144,7 @@ export function useCreateOrder(): UseCreateOrderResult {
     mutation.mutate(notes);
   };
 
-  const errorMessage =
-    offlineError ?? (mutation.isError ? "Failed to place order. Please try again." : null);
+  const errorMessage = offlineError ?? (mutation.isError ? extractApiError(mutation.error) : null);
 
   return {
     submitOrder,

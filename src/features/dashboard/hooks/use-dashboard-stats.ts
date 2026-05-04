@@ -28,7 +28,9 @@ export function useDashboardStats(): {
   isError: boolean;
 } {
   const restaurantId = useAuthStore((state) => state.restaurantId);
-  const today = new Date().toISOString().split("T")[0] ?? new Date().toISOString().slice(0, 10);
+  // Use local date (not UTC) so "today" matches the restaurant's timezone
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   const pendingQuery = useQuery({
     queryKey: [...PENDING_COUNT_QUERY_KEY, restaurantId],
@@ -44,6 +46,13 @@ export function useDashboardStats(): {
     enabled: restaurantId !== null,
     refetchInterval: POLL_INTERVAL_ORDERS,
     staleTime: POLL_INTERVAL_ORDERS,
+    // Do not retry on 4xx client errors — the backend may not support this date format
+    // yet; retrying would flood the server on every poll cycle.
+    retry: (failureCount, error) => {
+      const status = (error as { response?: { status?: number } }).response?.status;
+      if (status !== undefined && status >= 400 && status < 500) return false;
+      return failureCount < 2;
+    },
   });
 
   const stats: DashboardStats | undefined =

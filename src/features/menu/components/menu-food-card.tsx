@@ -23,15 +23,9 @@ export function MenuFoodCard({ food, onDelete, isDeleting }: MenuFoodCardProps) 
           <p className="text-sm leading-snug font-medium">{food.name}</p>
           <div className="flex shrink-0 items-center gap-1 pt-0.5">
             {food.is_vegetarian && (
-              <Leaf
-                className="size-3.5 text-green-600"
-                aria-label="Vegetarian"
-                title="Vegetarian"
-              />
+              <Leaf className="size-3.5 text-green-600" aria-label="Vegetarian" />
             )}
-            {food.is_spicy && (
-              <Flame className="size-3.5 text-orange-500" aria-label="Spicy" title="Spicy" />
-            )}
+            {food.is_spicy && <Flame className="size-3.5 text-orange-500" aria-label="Spicy" />}
           </div>
         </div>
 
