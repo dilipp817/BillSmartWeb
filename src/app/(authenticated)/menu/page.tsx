@@ -16,12 +16,13 @@ import {
   X,
 } from "lucide-react";
 
-import { OrderType, TAX_RATE_CGST, TAX_RATE_SGST } from "@/constants";
+import { OrderType, TAX_RATE_CGST, TAX_RATE_SGST, UserRole } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FoodBrowseGrid } from "@/features/menu/components/food-browse-grid";
 import type { FoodListItem } from "@/features/menu/types";
 import { cartItemCount, cartRunningTotal, useCartStore } from "@/store/use-cart-store";
+import { useAuthStore } from "@/store/use-auth-store";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { formatCurrency } from "@/utils/currency";
 import { HeldBillsDialog } from "@/features/billing/components/held-bills-dialog";
@@ -31,6 +32,11 @@ import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 export default function MenuPage() {
   const router = useRouter();
   const [showHeldBills, setShowHeldBills] = useState(false);
+  const [discountInput, setDiscountInput] = useState("");
+
+  // ── Auth ─────────────────────────────────────────────────────────────────────────────
+  const role = useAuthStore((s) => s.role);
+  const canApplyDiscount = role === UserRole.MANAGER || role === UserRole.ADMIN;
 
   // ── Cart state ──────────────────────────────────────────────────────────────────────
   const {
@@ -75,10 +81,12 @@ export default function MenuPage() {
    */
   const handleCheckout = () => {
     const isDineInWithTables = isTableManagementEnabled && orderType === OrderType.DINE_IN;
+    const discount = discountInput.trim() ? Number(discountInput) : undefined;
     if (isDineInWithTables) {
-      router.push("/menu/checkout");
+      const params = discount && discount > 0 ? `?discount=${discount}` : "";
+      router.push(`/menu/checkout${params}`);
     } else {
-      submitOrder(notes);
+      submitOrder(notes, discount);
     }
   };
 
@@ -297,6 +305,24 @@ export default function MenuPage() {
               <div className="text-destructive flex items-center gap-2 text-sm">
                 <AlertCircle className="size-4 shrink-0" />
                 <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Discount — MANAGER / ADMIN only (Phase 1 placeholder) */}
+            {canApplyDiscount && items.length > 0 && (
+              <div>
+                <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
+                  Discount (₹)
+                </p>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Enter discount amount…"
+                  value={discountInput}
+                  onChange={(e) => setDiscountInput(e.target.value)}
+                  className="h-8 text-sm"
+                />
               </div>
             )}
 

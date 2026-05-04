@@ -52,10 +52,20 @@ export function FoodCard({ food, onAdd, onRemove, quantity, className }: FoodCar
 
         {/* Name + diet badges */}
         <div className="flex items-start justify-between gap-1 p-3 pb-0">
-          <p className="text-sm leading-snug font-medium">{food.name}</p>
+          <div className="min-w-0">
+            <p className="text-sm leading-snug font-medium">{food.name}</p>
+            {food.category_name && (
+              <p className="text-muted-foreground mt-0.5 truncate text-xs">{food.category_name}</p>
+            )}
+          </div>
           <div className="flex shrink-0 items-center gap-1 pt-0.5">
-            {food.is_vegetarian && (
+            {food.is_vegetarian ? (
               <Leaf className="size-3.5 text-green-600" aria-label="Vegetarian" />
+            ) : (
+              <span
+                className="inline-block size-2.5 rounded-sm bg-red-600"
+                aria-label="Non-vegetarian"
+              />
             )}
             {food.is_spicy && <Flame className="size-3.5 text-orange-500" aria-label="Spicy" />}
           </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowLeft, Loader2, Users } from "lucide-react";
 
 import { OrderType, TAX_RATE_CGST, TAX_RATE_SGST } from "@/constants";
@@ -19,6 +19,9 @@ type Step = "table" | "confirm";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const discountParam = searchParams.get("discount");
+  const discount = discountParam ? Number(discountParam) : undefined;
 
   const isTableManagementEnabled = useFeatureFlag("is_table_management_enabled");
 
@@ -52,7 +55,7 @@ export default function CheckoutPage() {
     setUserAdvancedStep(true);
   };
 
-  const handlePlaceOrder = () => submitOrder(notes);
+  const handlePlaceOrder = () => submitOrder(notes, discount);
 
   // ── Step 1: Table Selection ────────────────────────────────────────────────
   if (step === "table") {
