@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   AlertCircle,
@@ -31,8 +31,20 @@ import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
 export default function MenuPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showHeldBills, setShowHeldBills] = useState(false);
   const [discountInput, setDiscountInput] = useState("");
+
+  // ── Order success pill ────────────────────────────────────────────────────
+  const [orderSuccess, setOrderSuccess] = useState(() => searchParams.get("order") === "placed");
+  useEffect(() => {
+    if (!orderSuccess) return;
+    // Replace URL so refresh / back-navigation doesn't re-show the pill
+    router.replace("/menu", { scroll: false });
+    const hide = setTimeout(() => setOrderSuccess(false), 800);
+    return () => clearTimeout(hide);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Live clock for cart header ─────────────────────────────────────────────
   const [now, setNow] = useState(() => new Date());
@@ -114,7 +126,26 @@ export default function MenuPage() {
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-full gap-4 lg:gap-6">
-      {" "}
+      {/* ── Order success pill ─────────────────────────────────────────────── */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className={[
+          "pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center transition-opacity duration-300",
+          orderSuccess ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      >
+        <div className="flex items-center gap-2 rounded-full bg-green-600 px-5 py-2 text-sm font-medium text-white shadow-lg">
+          <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path
+              fillRule="evenodd"
+              d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Order placed
+        </div>
+      </div>
       {showHeldBills && <HeldBillsDialog onClose={() => setShowHeldBills(false)} />}{" "}
       {/* ── Left: Food Browse ─────────────────────────────────────────────── */}
       <div className="min-w-0 flex-1 overflow-y-auto">
@@ -272,15 +303,6 @@ export default function MenuPage() {
                         {formatCurrency(item.price * item.quantity)}
                       </span>
                     </div>
-
-                    {/* Special request */}
-                    <Input
-                      type="text"
-                      placeholder="Special request…"
-                      value={item.special_requests}
-                      onChange={(e) => setSpecialRequest(item.id, e.target.value)}
-                      className="mt-1.5 h-7 text-xs"
-                    />
                   </li>
                 ))}
               </ul>
@@ -289,22 +311,6 @@ export default function MenuPage() {
 
           {/* Cart footer */}
           <div className="shrink-0 space-y-3 border-t px-4 py-3">
-            {/* Notes — only shown for TAKEAWAY (DINE_IN notes are on the confirmation screen) */}
-            {!isDineInWithTables && (
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs font-medium tracking-wide uppercase">
-                  Order Notes
-                </p>
-                <Input
-                  type="text"
-                  placeholder="e.g. No onion, extra spicy…"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-8 text-sm"
-                />
-              </div>
-            )}
-
             {/* Discount applied at bill generation — not in cart */}
 
             {/* Totals */}

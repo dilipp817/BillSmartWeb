@@ -88,7 +88,7 @@ export function useCreateOrder(): UseCreateOrderResult {
         router.push(`/orders/${order.id}/bill?discount=${pendingDiscount}`);
       } else {
         // Return to menu so the cashier can immediately take the next order
-        router.push("/menu");
+        router.push("/menu?order=placed");
       }
     },
   });
@@ -120,7 +120,7 @@ export function useCreateOrder(): UseCreateOrderResult {
       });
       clearCart();
       setIsOfflineQueued(true);
-      router.push("/menu");
+      router.push("/menu?order=placed");
     } catch {
       setOfflineError("Failed to save order offline. Please try again.");
     } finally {
