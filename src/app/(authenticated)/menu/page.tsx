@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -36,15 +36,23 @@ export default function MenuPage() {
   const [discountInput, setDiscountInput] = useState("");
 
   // ── Order success pill ────────────────────────────────────────────────────
-  const [orderSuccess, setOrderSuccess] = useState(() => searchParams.get("order") === "placed");
+  // setState calls are inside setTimeout (not synchronous) to satisfy
+  // react-hooks/set-state-in-effect. No cleanup return so the timeouts
+  // survive when router.replace re-triggers this effect.
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const orderSuccessHandled = useRef(false);
   useEffect(() => {
-    if (!orderSuccess) return;
-    // Replace URL so refresh / back-navigation doesn't re-show the pill
+    if (orderSuccessHandled.current) return;
+    if (searchParams.get("order") !== "placed") return;
+    orderSuccessHandled.current = true;
     router.replace("/menu", { scroll: false });
-    const hide = setTimeout(() => setOrderSuccess(false), 800);
-    return () => clearTimeout(hide);
+    setTimeout(() => setOrderSuccess(true), 0);
+    setTimeout(() => {
+      setOrderSuccess(false);
+      orderSuccessHandled.current = false;
+    }, 800);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   // ── Live clock for cart header ─────────────────────────────────────────────
   const [now, setNow] = useState(() => new Date());
@@ -67,9 +75,7 @@ export default function MenuPage() {
     addItem,
     removeItem,
     updateQuantity,
-    setSpecialRequest,
     setTable,
-    setNotes,
     holdCart,
   } = useCartStore();
 
