@@ -87,7 +87,8 @@ export function useCreateOrder(): UseCreateOrderResult {
       if (pendingDiscount !== undefined && pendingDiscount > 0) {
         router.push(`/orders/${order.id}/bill?discount=${pendingDiscount}`);
       } else {
-        router.push(`/orders/${order.id}`);
+        // Return to menu so the cashier can immediately take the next order
+        router.push("/menu");
       }
     },
   });
@@ -119,7 +120,7 @@ export function useCreateOrder(): UseCreateOrderResult {
       });
       clearCart();
       setIsOfflineQueued(true);
-      router.push("/orders");
+      router.push("/menu");
     } catch {
       setOfflineError("Failed to save order offline. Please try again.");
     } finally {
