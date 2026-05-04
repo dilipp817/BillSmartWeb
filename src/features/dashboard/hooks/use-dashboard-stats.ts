@@ -56,21 +56,21 @@ export function useDashboardStats(): {
   });
 
   const stats: DashboardStats | undefined =
-    pendingQuery.data !== undefined
-      ? {
-          pendingOrderCount: pendingQuery.data,
+    pendingQuery.data === undefined && todayQuery.data === undefined
+      ? undefined
+      : {
+          pendingOrderCount: pendingQuery.data ?? null,
           todayOrderCount: todayQuery.isError ? null : (todayQuery.data?.total ?? null),
           todayRevenue: todayQuery.isError
             ? null
             : (todayQuery.data?.orders
                 .filter((o) => o.status !== OrderStatus.CANCELLED)
                 .reduce((sum, o) => sum + o.total_amount, 0) ?? null),
-        }
-      : undefined;
+        };
 
   return {
     stats,
     isLoading: pendingQuery.isLoading || todayQuery.isLoading,
-    isError: pendingQuery.isError,
+    isError: pendingQuery.isError || todayQuery.isError,
   };
 }

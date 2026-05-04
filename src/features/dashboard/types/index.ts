@@ -5,7 +5,7 @@ export interface PendingOrderCountDto {
 
 // Shape used by useDashboardStats to drive the stat cards.
 export interface DashboardStats {
-  pendingOrderCount: number;
+  pendingOrderCount: number | null;
   todayOrderCount: number | null;
   todayRevenue: number | null;
 }

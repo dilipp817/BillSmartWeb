@@ -23,7 +23,7 @@ export function DashboardStatsGrid() {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <StatCard
         label="Pending Orders"
-        value={stats?.pendingOrderCount.toString() ?? "—"}
+        value={stats?.pendingOrderCount != null ? stats.pendingOrderCount.toString() : "—"}
         icon={ClipboardList}
         isLoading={isLoading}
       />
