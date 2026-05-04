@@ -71,6 +71,6 @@ export function useDashboardStats(): {
   return {
     stats,
     isLoading: pendingQuery.isLoading || todayQuery.isLoading,
-    isError: pendingQuery.isError || todayQuery.isError,
+    isError: pendingQuery.isError,
   };
 }
