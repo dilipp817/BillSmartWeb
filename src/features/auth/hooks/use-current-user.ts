@@ -25,10 +25,11 @@ export function useCurrentUser() {
   const query = useQuery<AuthUser>({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: getMe,
-    // Do not retry on failure — if /auth/me fails, user needs to re-login
+    // Never retry — if /auth/me fails, user needs to re-login
     retry: false,
-    // Keep data fresh for 5 minutes — session is validated separately on tab focus (A-04)
-    staleTime: 5 * 60 * 1_000,
+    // Fetch once per session. Role/restaurantId don't change mid-session.
+    // Any 401 (token expired) is caught globally by the Axios interceptor.
+    staleTime: Infinity,
   });
 
   useEffect(() => {

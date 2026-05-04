@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { useFeatureFlags } from "@/features/auth/hooks/use-feature-flags";
-import { useTokenValidation } from "@/features/auth/hooks/use-token-validation";
 import { useOfflineSyncEffect } from "@/features/orders/hooks/use-offline-order-queue";
 
 import { Header } from "./header";
@@ -29,7 +28,6 @@ interface AppShellClientProps {
  */
 export function AppShellClient({ children }: AppShellClientProps) {
   useCurrentUser();
-  useTokenValidation();
   useFeatureFlags();
   const { syncedCount } = useOfflineSyncEffect();
 
