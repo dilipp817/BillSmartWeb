@@ -21,6 +21,7 @@ export const CURRENT_USER_QUERY_KEY = ["auth", "me"] as const;
  */
 export function useCurrentUser() {
   const setUser = useAuthStore((state) => state.setUser);
+  const existingUser = useAuthStore((state) => state.user);
 
   const query = useQuery<AuthUser>({
     queryKey: CURRENT_USER_QUERY_KEY,
@@ -30,6 +31,9 @@ export function useCurrentUser() {
     // Fetch once per session. Role/restaurantId don't change mid-session.
     // Any 401 (token expired) is caught globally by the Axios interceptor.
     staleTime: Infinity,
+    // Skip the network call when the store is already hydrated from localStorage
+    // (i.e. page refresh after a previous login). Only fetch on a cold start.
+    enabled: existingUser === null,
   });
 
   useEffect(() => {
