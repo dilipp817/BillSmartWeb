@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -33,6 +33,13 @@ export default function MenuPage() {
   const router = useRouter();
   const [showHeldBills, setShowHeldBills] = useState(false);
   const [discountInput, setDiscountInput] = useState("");
+
+  // ── Live clock for cart header ─────────────────────────────────────────────
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   // ── Auth ─────────────────────────────────────────────────────────────────────────────
   const role = useAuthStore((s) => s.role);
@@ -165,7 +172,11 @@ export default function MenuPage() {
                 {items.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => useCartStore.getState().clearCart()}
+                    onClick={() => {
+                      if (window.confirm("Clear all items from cart?")) {
+                        useCartStore.getState().clearCart();
+                      }
+                    }}
                     className="text-muted-foreground hover:text-destructive flex items-center gap-1 text-xs transition-colors"
                     aria-label="Clear cart"
                   >
@@ -174,6 +185,20 @@ export default function MenuPage() {
                 )}
               </div>
             </div>
+
+            {/* Sub-line: table / counter label + date-time */}
+            <p className="text-muted-foreground mt-1 text-xs">
+              {orderType === OrderType.DINE_IN && tableId ? `T-${tableId}` : "Counter"}{" "}
+              &nbsp;|&nbsp;
+              {now.toLocaleDateString("en-IN", {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+              &nbsp;&nbsp;
+              {now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+            </p>
 
             {/* Order type radio buttons */}
             <div className="mt-3 flex gap-4">

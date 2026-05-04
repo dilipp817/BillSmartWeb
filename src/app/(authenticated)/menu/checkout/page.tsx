@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, ArrowLeft, Loader2, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, Users, WifiOff } from "lucide-react";
 
 import { OrderType, TAX_RATE_CGST, TAX_RATE_SGST } from "@/constants";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { TableSelectionGrid } from "@/features/tables/components/table-selection
 import type { AvailableTableDto } from "@/features/tables/types";
 import { cartRunningTotal, useCartStore } from "@/store/use-cart-store";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { formatCurrency } from "@/utils/currency";
 import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
@@ -27,6 +28,7 @@ export default function CheckoutPage() {
 
   const { items, orderType, notes, setNotes, setTable } = useCartStore();
   const { submitOrder, isPending, isError, errorMessage } = useCreateOrder();
+  const isOnline = useOnlineStatus();
 
   // Start at table-selection step when DINE_IN + table management enabled;
   // otherwise skip straight to confirmation.
@@ -79,11 +81,21 @@ export default function CheckoutPage() {
           </div>
         </div>
 
+        {/* Offline banner */}
+        {!isOnline && (
+          <div className="flex items-center gap-2 rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+            <WifiOff className="size-4 shrink-0" />
+            Table selection unavailable offline. Switch to Takeaway or use last known table.
+          </div>
+        )}
+
         {/* Table grid — fullscreen, not inline in cart */}
         <TableSelectionGrid
           selectedTableId={selectedTable?.id ?? null}
-          onSelect={setSelectedTable}
-          className="grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6"
+          onSelect={isOnline ? setSelectedTable : () => {}}
+          className={`grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6${
+            !isOnline ? "pointer-events-none opacity-50" : ""
+          }`}
         />
 
         {/* Footer */}
@@ -91,7 +103,11 @@ export default function CheckoutPage() {
           <p className="text-muted-foreground text-sm">
             {selectedTable ? `Selected: Table ${selectedTable.table_number}` : "No table selected"}
           </p>
-          <Button onClick={handleConfirmTable} disabled={!selectedTable} className="min-w-32">
+          <Button
+            onClick={handleConfirmTable}
+            disabled={!selectedTable || !isOnline}
+            className="min-w-32"
+          >
             Confirm Table →
           </Button>
         </div>
