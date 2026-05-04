@@ -27,7 +27,7 @@ export default function CheckoutPage() {
   const isTableManagementEnabled = useFeatureFlag("is_table_management_enabled");
 
   const { items, orderType, notes, setNotes, setTable } = useCartStore();
-  const { submitOrder, isPending, isError, errorMessage } = useCreateOrder();
+  const { submitOrder, isPending, isError, isConflict, errorMessage } = useCreateOrder();
   const isOnline = useOnlineStatus();
 
   // Start at table-selection step when DINE_IN + table management enabled;
@@ -244,25 +244,57 @@ export default function CheckoutPage() {
               * Actual tax (CGST 9% + SGST 9%) is calculated by the server at bill generation.
             </p>
 
-            {/* Error */}
-            {isError && errorMessage && (
-              <div className="text-destructive flex items-center gap-2 text-sm">
-                <AlertCircle className="size-4 shrink-0" />
-                <span>{errorMessage}</span>
+            {/* Error / Conflict / Place Order */}
+            {isConflict ? (
+              /* 409 — table taken since selection: replace button with conflict banner */
+              <div className="space-y-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="text-destructive mt-0.5 size-4 shrink-0" />
+                  <div>
+                    <p className="text-destructive text-sm font-medium">
+                      Table no longer available
+                    </p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">
+                      {selectedTable
+                        ? `Table ${selectedTable.table_number} was taken by another order.`
+                        : "The selected table is now occupied."}{" "}
+                      Please pick a different table.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setUserAdvancedStep(false)}
+                >
+                  Re-select Table
+                </Button>
               </div>
+            ) : (
+              <>
+                {isError && errorMessage && (
+                  <div className="text-destructive flex items-center gap-2 text-sm">
+                    <AlertCircle className="size-4 shrink-0" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+                <Button
+                  onClick={handlePlaceOrder}
+                  disabled={isPending}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Placing Order…
+                    </>
+                  ) : (
+                    "Place Order"
+                  )}
+                </Button>
+              </>
             )}
-
-            {/* Place Order */}
-            <Button onClick={handlePlaceOrder} disabled={isPending} className="w-full" size="lg">
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Placing Order…
-                </>
-              ) : (
-                "Place Order"
-              )}
-            </Button>
           </div>
         </div>
       </div>

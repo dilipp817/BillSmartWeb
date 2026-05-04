@@ -34,6 +34,8 @@ interface UseCreateOrderResult {
   isPending: boolean;
   isError: boolean;
   errorMessage: string | null;
+  /** True when the last submit failed with HTTP 409 (table already occupied). */
+  isConflict: boolean;
   /** True briefly after a successful offline enqueue (so UI can confirm). */
   isOfflineQueued: boolean;
 }
@@ -99,6 +101,11 @@ export function useCreateOrder(): UseCreateOrderResult {
     return "Failed to place order. Please try again.";
   }
 
+  function isConflictError(err: unknown): boolean {
+    const axiosErr = err as AxiosError;
+    return axiosErr.response?.status === 409;
+  }
+
   const handleOfflineQueue = async (notes?: string) => {
     if (!restaurantId) return;
     setIsQueuingOffline(true);
@@ -151,6 +158,7 @@ export function useCreateOrder(): UseCreateOrderResult {
     isPending: mutation.isPending || isQueuingOffline,
     isError: mutation.isError || offlineError !== null,
     errorMessage,
+    isConflict: mutation.isError && isConflictError(mutation.error),
     isOfflineQueued,
   };
 }
