@@ -1,47 +1,15 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
-const isDev = process.env.NODE_ENV === "development";
-
 /**
- * Content Security Policy.
+ * Security response headers applied to every route.
  *
- * 'unsafe-eval' and 'unsafe-inline' are permitted in development only —
- * Next.js HMR and React Query Devtools require them. Production is strict.
- *
- * connect-src includes the Next.js API proxy origin only (/api/*) — the real
- * backend URL is server-side and never reaches the browser.
+ * Content-Security-Policy is intentionally absent here — it is set per-request
+ * in middleware (src/middleware.ts) with a cryptographic nonce so that Next.js
+ * App Router inline scripts (RSC payloads, hydration) are allowed while
+ * arbitrary inline scripts are still blocked.
  */
-const cspDirectives = [
-  "default-src 'self'",
-  isDev ? "script-src 'self' 'unsafe-eval' 'unsafe-inline'" : "script-src 'self'",
-  // Next.js injects inline styles; Google Fonts used for Geist typeface
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
-  // data: for base64 image placeholders; blob: for print preview; https: for food images from backend CDN
-  "img-src 'self' data: blob: https:",
-  // All XHR/fetch goes to same origin via /api/* proxy.
-  // localhost:* is allowed for the SmartPrint agent (localhost HTTP, browser→printer bridge).
-  // In production this resolves to nothing harmful — localhost is never reachable remotely.
-  isDev ? "connect-src 'self' http://localhost:*" : "connect-src 'self' http://localhost:*",
-  // Service worker is served from the same origin
-  "worker-src 'self'",
-  "frame-src 'none'",
-  // Blocks the page from being embedded in an iframe on any origin
-  "frame-ancestors 'none'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "upgrade-insecure-requests",
-]
-  .filter(Boolean)
-  .join("; ");
-
 const securityHeaders = [
-  {
-    key: "Content-Security-Policy",
-    value: cspDirectives,
-  },
   {
     // Blocks the page from being loaded in a frame — defence-in-depth with CSP frame-ancestors
     key: "X-Frame-Options",
