@@ -63,13 +63,13 @@ describe("useSidebarNavItems — role filtering", () => {
     expect(result.current).toHaveLength(0);
   });
 
-  it("STAFF sees Dashboard, Orders, Billing, Tables, Menu, Settings — not Reports or Manage Menu", () => {
+  it("STAFF sees Dashboard, Orders, Tables, Menu, Settings — not Reports or Manage Menu", () => {
     setRole(UserRole.STAFF);
     const { result } = renderHook(() => useSidebarNavItems());
     const shown = labels(result.current);
     expect(shown).toContain("Dashboard");
     expect(shown).toContain("Orders");
-    expect(shown).toContain("Billing");
+    expect(shown).not.toContain("Billing");
     expect(shown).toContain("Tables");
     expect(shown).toContain("Menu");
     expect(shown).toContain("Settings");
@@ -77,13 +77,13 @@ describe("useSidebarNavItems — role filtering", () => {
     expect(shown).not.toContain("Manage Menu");
   });
 
-  it("MANAGER sees Dashboard, Orders, Billing, Tables, Reports, Menu, Settings — not Manage Menu", () => {
+  it("MANAGER sees Dashboard, Orders, Tables, Reports, Menu, Settings — not Manage Menu", () => {
     setRole(UserRole.MANAGER);
     const { result } = renderHook(() => useSidebarNavItems());
     const shown = labels(result.current);
     expect(shown).toContain("Dashboard");
     expect(shown).toContain("Orders");
-    expect(shown).toContain("Billing");
+    expect(shown).not.toContain("Billing");
     expect(shown).toContain("Tables");
     expect(shown).toContain("Reports");
     expect(shown).toContain("Menu");
@@ -97,7 +97,7 @@ describe("useSidebarNavItems — role filtering", () => {
     const shown = labels(result.current);
     expect(shown).toContain("Dashboard");
     expect(shown).toContain("Orders");
-    expect(shown).toContain("Billing");
+    expect(shown).not.toContain("Billing");
     expect(shown).toContain("Tables");
     expect(shown).toContain("Reports");
     expect(shown).toContain("Menu");
