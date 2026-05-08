@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowLeft, Loader2, Users, WifiOff } from "lucide-react";
@@ -18,7 +18,7 @@ import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
 type Step = "table" | "confirm";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const discountParam = searchParams.get("discount");
@@ -299,5 +299,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense>
+      <CheckoutContent />
+    </Suspense>
   );
 }

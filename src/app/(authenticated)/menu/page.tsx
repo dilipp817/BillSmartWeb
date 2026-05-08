@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -29,7 +29,7 @@ import { HeldBillsDialog } from "@/features/billing/components/held-bills-dialog
 
 import { useCreateOrder } from "@/features/orders/hooks/use-create-order";
 
-export default function MenuPage() {
+function MenuContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showHeldBills, setShowHeldBills] = useState(false);
@@ -380,5 +380,13 @@ export default function MenuPage() {
         </div>
       </aside>
     </div>
+  );
+}
+
+export default function MenuPage() {
+  return (
+    <Suspense>
+      <MenuContent />
+    </Suspense>
   );
 }
