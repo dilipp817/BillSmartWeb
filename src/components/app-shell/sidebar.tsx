@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { currentFlavor } from "@/config/flavor";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -38,7 +39,7 @@ export function Sidebar() {
       {/* Brand */}
       <div className="border-sidebar-border flex h-16 shrink-0 items-center border-b px-6">
         <span className="text-sidebar-foreground text-lg font-semibold tracking-tight">
-          BillSmart
+          {currentFlavor.displayName}
         </span>
       </div>
 

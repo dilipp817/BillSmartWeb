@@ -13,7 +13,7 @@ const MANAGER_ADMIN_ROUTES = ["/reports"];
  * Routes that require admin role only.
  * Staff and manager users are redirected to /dashboard.
  */
-const ADMIN_ONLY_ROUTES = ["/menu"];
+const ADMIN_ONLY_ROUTES = ["/menu/management"];
 
 /**
  * Decode the payload segment of a JWT without verifying the signature.

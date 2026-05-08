@@ -18,10 +18,12 @@ const cspDirectives = [
   // Next.js injects inline styles; Google Fonts used for Geist typeface
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  // data: for base64 image placeholders; blob: for print preview
-  "img-src 'self' data: blob:",
-  // All XHR/fetch goes to same origin via /api/* proxy
-  "connect-src 'self'",
+  // data: for base64 image placeholders; blob: for print preview; https: for food images from backend CDN
+  "img-src 'self' data: blob: https:",
+  // All XHR/fetch goes to same origin via /api/* proxy.
+  // localhost:* is allowed for the SmartPrint agent (localhost HTTP, browser→printer bridge).
+  // In production this resolves to nothing harmful — localhost is never reachable remotely.
+  isDev ? "connect-src 'self' http://localhost:*" : "connect-src 'self' http://localhost:*",
   // Service worker is served from the same origin
   "worker-src 'self'",
   "frame-src 'none'",
@@ -67,6 +69,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   async headers() {
     return [
       {

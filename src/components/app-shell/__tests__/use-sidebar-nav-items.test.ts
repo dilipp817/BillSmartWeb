@@ -2,8 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { UserRole } from "@/constants";
-import { useAuthStore } from "@/store/use-auth-store";
-import { useFeatureFlagStore, type FeatureFlags } from "@/store/use-feature-flag-store";
+import type { FeatureFlags } from "@/store/use-feature-flag-store";
 
 import { useSidebarNavItems } from "../use-sidebar-nav-items";
 
@@ -64,7 +63,7 @@ describe("useSidebarNavItems — role filtering", () => {
     expect(result.current).toHaveLength(0);
   });
 
-  it("STAFF sees Dashboard, Orders, Billing, Tables, Settings — not Reports or Menu", () => {
+  it("STAFF sees Dashboard, Orders, Billing, Tables, Menu, Settings — not Reports or Manage Menu", () => {
     setRole(UserRole.STAFF);
     const { result } = renderHook(() => useSidebarNavItems());
     const shown = labels(result.current);
@@ -72,12 +71,13 @@ describe("useSidebarNavItems — role filtering", () => {
     expect(shown).toContain("Orders");
     expect(shown).toContain("Billing");
     expect(shown).toContain("Tables");
+    expect(shown).toContain("Menu");
     expect(shown).toContain("Settings");
     expect(shown).not.toContain("Reports");
-    expect(shown).not.toContain("Menu");
+    expect(shown).not.toContain("Manage Menu");
   });
 
-  it("MANAGER sees Dashboard, Orders, Billing, Tables, Reports, Settings — not Menu", () => {
+  it("MANAGER sees Dashboard, Orders, Billing, Tables, Reports, Menu, Settings — not Manage Menu", () => {
     setRole(UserRole.MANAGER);
     const { result } = renderHook(() => useSidebarNavItems());
     const shown = labels(result.current);
@@ -86,8 +86,9 @@ describe("useSidebarNavItems — role filtering", () => {
     expect(shown).toContain("Billing");
     expect(shown).toContain("Tables");
     expect(shown).toContain("Reports");
+    expect(shown).toContain("Menu");
     expect(shown).toContain("Settings");
-    expect(shown).not.toContain("Menu");
+    expect(shown).not.toContain("Manage Menu");
   });
 
   it("ADMIN sees all nav items", () => {

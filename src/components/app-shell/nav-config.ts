@@ -8,6 +8,7 @@ import {
   TableProperties,
   Tag,
   Utensils,
+  UtensilsCrossed,
 } from "lucide-react";
 
 import { UserRole } from "@/constants";
@@ -41,6 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Billing",
     icon: Receipt,
     roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+    disabledOffline: true,
   },
   {
     href: "/tables",
@@ -62,6 +64,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/menu",
     label: "Menu",
     icon: Utensils,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+  },
+  {
+    href: "/menu/management",
+    label: "Manage Menu",
+    icon: UtensilsCrossed,
     roles: [UserRole.ADMIN],
   },
   {

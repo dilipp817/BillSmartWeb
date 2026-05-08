@@ -43,7 +43,7 @@ export default function OrderDetailPage({ params }: PageProps) {
 
   const [showAddItems, setShowAddItems] = useState(false);
 
-  const { order, isLoading, isError, addItem, isAddingItem, cancelOrder, isCancelling } =
+  const { order, isLoading, addItem, isAddingItem, cancelOrder, isCancelling } =
     useOrderDetail(orderId);
 
   // ── Loading ──────────────────────────────────────────────────────────────────
@@ -55,8 +55,9 @@ export default function OrderDetailPage({ params }: PageProps) {
     );
   }
 
-  // ── Error ────────────────────────────────────────────────────────────────────
-  if (isError || !order) {
+  // ── Error — only show full error screen if we have no data at all.
+  // If we have cached order data, render it even if a background refetch failed.
+  if (!order) {
     return (
       <div className="flex flex-col items-center gap-3 py-20">
         <AlertCircle className="text-destructive size-8" />

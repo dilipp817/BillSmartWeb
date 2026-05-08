@@ -33,19 +33,19 @@ const discountSchema = z.coerce
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tableId?: string }>;
+  searchParams: Promise<{ tableId?: string; discount?: string }>;
 }
 
 export default function GenerateBillPage({ params, searchParams }: PageProps) {
   const { id } = use(params);
-  const { tableId: tableIdParam } = use(searchParams);
+  const { tableId: tableIdParam, discount: discountParam } = use(searchParams);
   const orderId = Number(id);
   const tableId = tableIdParam ? Number(tableIdParam) : undefined;
 
   const isDiscountEnabled = useFeatureFlag("is_bill_discount_enabled");
   const cashierName = useAuthStore((s) => s.user?.username);
 
-  const [discountInput, setDiscountInput] = useState("0");
+  const [discountInput, setDiscountInput] = useState(discountParam ?? "0");
   const [discountError, setDiscountError] = useState<string | null>(null);
 
   const { generate, isPending, isError, errorMessage, bill } = useGenerateBill(orderId);
@@ -96,7 +96,7 @@ export default function GenerateBillPage({ params, searchParams }: PageProps) {
           />
 
           <Link
-            href={`/orders/${orderId}/payment?billId=${bill.id}${tableId ? `&tableId=${tableId}` : ""}`}
+            href={`/orders/${orderId}/payment?billId=${bill.id}&amount=${bill.remaining_amount}${tableId ? `&tableId=${tableId}` : ""}`}
           >
             <Button className="w-full" size="lg">
               Proceed to Payment

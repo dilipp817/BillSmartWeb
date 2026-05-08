@@ -6,13 +6,8 @@ import { POLL_INTERVAL_ORDERS } from "@/constants";
 import type { OrderStatus } from "@/constants";
 import { useAuthStore } from "@/store/use-auth-store";
 
-import {
-  listActiveOrders,
-  listOrders,
-  listOrdersByStatus,
-  searchOrders,
-} from "../services/order-service";
-import type { OrderListResponse } from "../types";
+import { listActiveOrders, listOrders, listOrdersByStatus } from "../services/order-service";
+import type { OrderDto, OrderListResponse } from "../types";
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -58,9 +53,6 @@ export function useOrders({ filter = "all", search = "" }: UseOrdersOptions = {}
     if (restaurantId === null) {
       return Promise.reject(new Error("No restaurant ID in session"));
     }
-    if (search.trim().length > 0) {
-      return searchOrders(restaurantId, search.trim());
-    }
     if (filter === "active") {
       return listActiveOrders(restaurantId);
     }
@@ -72,17 +64,32 @@ export function useOrders({ filter = "all", search = "" }: UseOrdersOptions = {}
   };
 
   const { data, isLoading, isError, refetch } = useQuery<OrderListResponse>({
-    queryKey: ordersQueryKey(restaurantId ?? 0, filter, search),
+    queryKey: ordersQueryKey(restaurantId ?? 0, filter, ""),
     queryFn,
     enabled: restaurantId !== null,
     refetchInterval: POLL_INTERVAL_ORDERS,
     staleTime: POLL_INTERVAL_ORDERS,
   });
 
+  const q = search.trim().toLowerCase();
+  const filteredOrders: OrderDto[] = q
+    ? (data?.orders ?? []).filter(
+        (o) =>
+          o.order_number.toLowerCase().includes(q) ||
+          (o.table_number ?? "").toLowerCase().includes(q) ||
+          o.status.toLowerCase().includes(q) ||
+          o.order_type.toLowerCase().includes(q)
+      )
+    : (data?.orders ?? []);
+
+  // Treat restaurantId not yet loaded as a loading state so the empty-state
+  // never flashes before the query has had a chance to run.
+  const effectivelyLoading = restaurantId === null || isLoading;
+
   return {
-    orders: data?.orders ?? [],
-    total: data?.total ?? 0,
-    isLoading,
+    orders: filteredOrders,
+    total: filteredOrders.length,
+    isLoading: effectivelyLoading,
     isError,
     refetch,
   };

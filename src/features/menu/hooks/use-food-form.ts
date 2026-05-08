@@ -111,7 +111,7 @@ export function useFoodForm({ mode, foodId }: UseFoodFormOptions): UseFoodFormRe
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: MENU_MANAGEMENT_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: FOOD_BROWSE_QUERY_KEY });
-      router.push("/menu");
+      router.push("/menu/management");
     },
   });
 

@@ -62,3 +62,14 @@ export enum OfflineSyncStatus {
   SYNCED = "SYNCED",
   FAILED = "FAILED",
 }
+
+export enum Flavor {
+  SMART_POS = "smartPos",
+  JEVNAR_SWEETS = "jevnarSweets",
+}
+
+export enum AppEnv {
+  DEV = "dev",
+  UAT = "uat",
+  PROD = "prod",
+}

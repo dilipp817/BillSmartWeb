@@ -24,7 +24,7 @@ export default function EditFoodPage({ params }: EditFoodPageProps) {
       <div className="flex flex-col items-center gap-3 py-20">
         <AlertCircle className="text-destructive size-8" />
         <p className="text-muted-foreground text-sm">Invalid food ID.</p>
-        <Link href="/menu">
+        <Link href="/menu/management">
           <Button variant="outline" size="sm">
             Back to Menu
           </Button>

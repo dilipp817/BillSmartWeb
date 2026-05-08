@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { DEFAULT_PAGE_SIZE } from "@/constants";
+import { MAX_PAGE_SIZE } from "@/constants";
 import { useAuthStore } from "@/store/use-auth-store";
 
 import { listCategories } from "../services/category-service";
@@ -22,6 +22,8 @@ export interface FoodBrowseFilters {
   isVegetarian: boolean | null;
   isSpicy: boolean | null;
   offset: number;
+  /** API sort string: "name:asc" | "price:asc" | "price:desc" | undefined (default) */
+  sort?: string;
 }
 
 export const INITIAL_FOOD_BROWSE_FILTERS: FoodBrowseFilters = {
@@ -63,8 +65,9 @@ export function useFoodBrowse(filters: FoodBrowseFilters): UseFoodBrowseResult {
     ...(filters.categoryId !== null && { category_id: filters.categoryId }),
     ...(filters.isVegetarian !== null && { is_vegetarian: filters.isVegetarian }),
     ...(filters.isSpicy !== null && { is_spicy: filters.isSpicy }),
+    ...(filters.sort && { sort: filters.sort }),
     offset: filters.offset,
-    limit: DEFAULT_PAGE_SIZE,
+    limit: MAX_PAGE_SIZE,
   };
 
   const foodsQuery = useQuery({

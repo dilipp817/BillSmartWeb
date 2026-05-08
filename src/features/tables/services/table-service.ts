@@ -63,10 +63,11 @@ export async function listAvailableTables(
   minCapacity?: number
 ): Promise<AvailableTableDto[]> {
   const params = minCapacity !== undefined ? { capacity: minCapacity } : {};
-  const response = await apiClient.get<AvailableTableDto[]>(`${base(restaurantId)}/available`, {
-    params,
-  });
-  return response.data;
+  const response = await apiClient.get<ApiResponse<AvailableTableDto[]>>(
+    `${base(restaurantId)}/available`,
+    { params }
+  );
+  return response.data.data;
 }
 
 /**
