@@ -9,8 +9,6 @@ import {
 } from "@/constants";
 import { env } from "@/env";
 
-export { TOKEN_COOKIE };
-
 type RouteContext = { params: Promise<{ proxy: string[] }> };
 
 async function handler(request: NextRequest, context: RouteContext) {
