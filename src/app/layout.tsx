@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { currentFlavor } from "@/config/flavor";
 import { Providers } from "@/components/providers";
 
 import "./globals.css";
@@ -16,13 +17,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BillSmart",
+  title: currentFlavor.appName,
   description: "Restaurant POS System",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BillSmart",
+    title: currentFlavor.appName,
   },
 };
 
@@ -36,7 +37,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      style={
+        {
+          "--primary": currentFlavor.theme.primary,
+          "--primary-foreground": currentFlavor.theme.primaryForeground,
+          "--sidebar-primary": currentFlavor.theme.sidebarPrimary,
+          "--sidebar-primary-foreground": currentFlavor.theme.sidebarPrimaryForeground,
+        } as React.CSSProperties
+      }
+    >
       <body className="flex min-h-full flex-col">
         <Providers>{children}</Providers>
       </body>
