@@ -12,7 +12,7 @@
 /.next/
 /out/
 
-# serwist build output
+# serwist build output — generated during pnpm build, never commit
 /public/sw.js
 /public/sw.js.map
 /public/workbox-*.js
