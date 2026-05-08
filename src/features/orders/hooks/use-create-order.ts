@@ -73,7 +73,7 @@ export function useCreateOrder(): UseCreateOrderResult {
   const [isOfflineQueued, setIsOfflineQueued] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: ({ notes, discount: _discount }: { notes?: string; discount?: number }) => {
+    mutationFn: ({ notes }: { notes?: string; discount?: number }) => {
       if (!restaurantId) {
         throw new Error("No restaurant context — cannot create order.");
       }

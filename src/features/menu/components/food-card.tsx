@@ -124,7 +124,7 @@ export function FoodCard({ food, onAdd, onRemove, quantity, className }: FoodCar
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                food.is_available && onAdd(food);
+                if (food.is_available) onAdd(food);
               }}
               disabled={!food.is_available}
               className={cn(

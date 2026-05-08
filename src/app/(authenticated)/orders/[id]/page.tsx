@@ -43,15 +43,8 @@ export default function OrderDetailPage({ params }: PageProps) {
 
   const [showAddItems, setShowAddItems] = useState(false);
 
-  const {
-    order,
-    isLoading,
-    isError: _isError,
-    addItem,
-    isAddingItem,
-    cancelOrder,
-    isCancelling,
-  } = useOrderDetail(orderId);
+  const { order, isLoading, addItem, isAddingItem, cancelOrder, isCancelling } =
+    useOrderDetail(orderId);
 
   // ── Loading ──────────────────────────────────────────────────────────────────
   if (isLoading) {
