@@ -3,6 +3,7 @@ import {
   BarChart3,
   ClipboardList,
   LayoutDashboard,
+  Receipt,
   Settings,
   TableProperties,
   Tag,
@@ -37,6 +38,13 @@ export const NAV_ITEMS: NavItem[] = [
     roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
+    href: "/billing",
+    label: "Billing",
+    icon: Receipt,
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+    disabledOffline: true,
+  },
+  {
     href: "/tables",
     label: "Tables",
     icon: TableProperties,
@@ -56,7 +64,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/menu",
     label: "Menu",
     icon: Utensils,
-    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
+    roles: [UserRole.ADMIN],
   },
   {
     href: "/menu/management",

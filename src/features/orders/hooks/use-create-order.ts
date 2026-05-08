@@ -12,6 +12,8 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { OrderType } from "@/constants";
 import type { ApiErrorResponse } from "@/types";
+import { usePrinterSettingsStore } from "@/store/use-printer-settings-store";
+import { autoGenerateAndPrint } from "@/features/print/utils/auto-print";
 
 import { createOrder } from "../services/order-service";
 import { enqueueOrder } from "./use-offline-order-queue";
@@ -58,9 +60,12 @@ interface UseCreateOrderResult {
 export function useCreateOrder(): UseCreateOrderResult {
   const router = useRouter();
   const restaurantId = useAuthStore((state) => state.restaurantId);
+  const cashierName = useAuthStore((state) => state.user?.username);
   const { items, tableId, orderType, clearCart } = useCartStore();
   const isOnline = useOnlineStatus();
   const isOfflineSyncEnabled = useFeatureFlag("is_offline_order_sync_enabled");
+  const isPrintingEnabled = useFeatureFlag("is_bill_printing_enabled");
+  const agentUrl = usePrinterSettingsStore((s) => s.agentUrl);
 
   const [isQueuingOffline, setIsQueuingOffline] = useState(false);
   const [offlineError, setOfflineError] = useState<string | null>(null);
@@ -83,10 +88,21 @@ export function useCreateOrder(): UseCreateOrderResult {
       clearCart();
       // Invalidate all order queries so the order list reflects the new order
       queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
-      // When a discount was set by a MANAGER/ADMIN, go straight to bill generation
+      // When a discount was set by a MANAGER/ADMIN, go straight to bill generation.
+      // The bill page already has a PrintButton — no auto-print needed there.
       if (pendingDiscount !== undefined && pendingDiscount > 0) {
         router.push(`/orders/${order.id}/bill?discount=${pendingDiscount}`);
       } else {
+        // Auto-print: generate bill + send to printer without blocking the cashier.
+        // Fire-and-forget — redirect happens immediately regardless of print outcome.
+        if (isPrintingEnabled && restaurantId !== null) {
+          void autoGenerateAndPrint(
+            restaurantId,
+            order.id,
+            { order_type: orderType, cashier_name: cashierName },
+            agentUrl
+          );
+        }
         // Return to menu so the cashier can immediately take the next order
         router.push("/menu?order=placed");
       }
