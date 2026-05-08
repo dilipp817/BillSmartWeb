@@ -173,7 +173,7 @@ function EmptyState({ search }: { search: string }) {
           : "No food items yet. Add your first item to get started."}
       </p>
       {search.trim().length === 0 && (
-        <Link href="/menu/new">
+        <Link href="/menu/management/new">
           <Button size="sm">
             <Plus className="size-4" />
             Add Food

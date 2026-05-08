@@ -64,7 +64,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/menu",
     label: "Menu",
     icon: Utensils,
-    roles: [UserRole.ADMIN],
+    roles: [UserRole.STAFF, UserRole.MANAGER, UserRole.ADMIN],
   },
   {
     href: "/menu/management",

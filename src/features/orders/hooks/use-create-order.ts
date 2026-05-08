@@ -71,10 +71,9 @@ export function useCreateOrder(): UseCreateOrderResult {
   const [isQueuingOffline, setIsQueuingOffline] = useState(false);
   const [offlineError, setOfflineError] = useState<string | null>(null);
   const [isOfflineQueued, setIsOfflineQueued] = useState(false);
-  const [pendingDiscount, setPendingDiscount] = useState<number | undefined>(undefined);
 
   const mutation = useMutation({
-    mutationFn: (notes: string | undefined) => {
+    mutationFn: ({ notes, discount: _discount }: { notes?: string; discount?: number }) => {
       if (!restaurantId) {
         throw new Error("No restaurant context — cannot create order.");
       }
@@ -85,14 +84,14 @@ export function useCreateOrder(): UseCreateOrderResult {
         ...(notes?.trim() && { notes: notes.trim() }),
       });
     },
-    onSuccess: (order) => {
+    onSuccess: (order, variables) => {
       clearCart();
       // Invalidate all order queries so the order list reflects the new order
       queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEY });
       // When a discount was set by a MANAGER/ADMIN, go straight to bill generation.
       // The bill page already has a PrintButton — no auto-print needed there.
-      if (pendingDiscount !== undefined && pendingDiscount > 0) {
-        router.push(`/orders/${order.id}/bill?discount=${pendingDiscount}`);
+      if (variables.discount !== undefined && variables.discount > 0) {
+        router.push(`/orders/${order.id}/bill?discount=${variables.discount}`);
       } else {
         // Auto-print: generate bill + send to printer without blocking the cashier.
         // Fire-and-forget — redirect happens immediately regardless of print outcome.
@@ -154,8 +153,6 @@ export function useCreateOrder(): UseCreateOrderResult {
       return;
     }
 
-    setPendingDiscount(discount);
-
     if (!isOnline) {
       if (isOfflineSyncEnabled) {
         void handleOfflineQueue(notes);
@@ -166,7 +163,7 @@ export function useCreateOrder(): UseCreateOrderResult {
     }
 
     setOfflineError(null);
-    mutation.mutate(notes);
+    mutation.mutate({ notes, discount });
   };
 
   const errorMessage = offlineError ?? (mutation.isError ? extractApiError(mutation.error) : null);
