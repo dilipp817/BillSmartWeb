@@ -18,10 +18,9 @@ interface AppShellClientProps {
 /**
  * AppShellClient — the authenticated shell.
  *
- * Mounts the three auth hooks once for the entire authenticated session:
- *  1. useCurrentUser     — session recovery from /auth/me on page refresh
- *  2. useTokenValidation — validates token on mount + tab focus
- *  3. useFeatureFlags    — re-fetches flags on mount + tab focus (throttled 15 min)
+ * Mounts the auth hooks once for the entire authenticated session:
+ *  1. useCurrentUser  — session recovery from /auth/me on page refresh
+ *  2. useFeatureFlags — re-fetches flags on mount + tab focus (throttled 15 min)
  *
  * Renders: sidebar (left) + header (top) + scrollable page content (right/main).
  * Mount once at the (authenticated) route group layout — never per-page.

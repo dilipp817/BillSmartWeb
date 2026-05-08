@@ -48,7 +48,8 @@ interface UseCreateOrderResult {
  *
  * Online path:
  *   1. POST to backend via createOrder()
- *   2. On success: clear cart → invalidate order queries → navigate to /orders/{id}
+ *   2. On success: clear cart → invalidate order queries → navigate to /menu?order=placed
+ *      (or /orders/{id}/bill?discount={n} when a Manager/Admin discount is pending)
  *
  * Offline path (is_offline_order_sync_enabled=true):
  *   1. enqueueOrder() → persist to IndexedDB with PENDING status

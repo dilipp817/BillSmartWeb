@@ -19,7 +19,15 @@ export function OrderListRow({ order }: OrderListRowProps) {
   return (
     <tr
       className="hover:bg-muted/50 cursor-pointer border-b transition-colors last:border-0"
+      role="link"
+      tabIndex={0}
       onClick={() => router.push(`/orders/${order.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          router.push(`/orders/${order.id}`);
+        }
+      }}
     >
       <td className="px-4 py-3 font-mono text-sm font-medium">{order.order_number}</td>
       <td className="px-4 py-3 text-sm">{tableLabel}</td>

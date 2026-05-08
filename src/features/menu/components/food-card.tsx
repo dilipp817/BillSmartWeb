@@ -31,8 +31,14 @@ export function FoodCard({ food, onAdd, onRemove, quantity, className }: FoodCar
       )}
       onClick={() => food.is_available && onAdd(food)}
       role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === "Enter" && food.is_available && onAdd(food)}
+      tabIndex={food.is_available ? 0 : -1}
+      aria-disabled={!food.is_available}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && food.is_available) {
+          e.preventDefault();
+          onAdd(food);
+        }
+      }}
       aria-label={`Add ${food.name} to cart`}
     >
       {/* Thumbnail */}

@@ -20,8 +20,10 @@ const cspDirectives = [
   "font-src 'self' https://fonts.gstatic.com",
   // data: for base64 image placeholders; blob: for print preview; https: for food images from backend CDN
   "img-src 'self' data: blob: https:",
-  // All XHR/fetch goes to same origin via /api/* proxy
-  "connect-src 'self'",
+  // All XHR/fetch goes to same origin via /api/* proxy.
+  // localhost:* is allowed for the SmartPrint agent (localhost HTTP, browser→printer bridge).
+  // In production this resolves to nothing harmful — localhost is never reachable remotely.
+  isDev ? "connect-src 'self' http://localhost:*" : "connect-src 'self' http://localhost:*",
   // Service worker is served from the same origin
   "worker-src 'self'",
   "frame-src 'none'",
