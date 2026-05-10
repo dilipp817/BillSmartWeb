@@ -74,14 +74,14 @@ export function useFoodBrowse(filters: FoodBrowseFilters): UseFoodBrowseResult {
     queryKey: [...FOOD_BROWSE_QUERY_KEY, restaurantId, foodParams],
     queryFn: () => listFoods(foodParams),
     enabled: restaurantId !== null,
-    staleTime: 60_000, // 1 minute — menu doesn't change mid-service
+    staleTime: Infinity, // menu mutations explicitly invalidate this query
   });
 
   const categoriesQuery = useQuery({
     queryKey: [...CATEGORIES_QUERY_KEY, restaurantId],
     queryFn: () => listCategories(restaurantId!),
     enabled: restaurantId !== null,
-    staleTime: 5 * 60_000, // 5 minutes — categories change even less often
+    staleTime: Infinity, // category mutations explicitly invalidate this query
   });
 
   return {

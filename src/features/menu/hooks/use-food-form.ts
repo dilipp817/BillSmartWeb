@@ -77,7 +77,7 @@ export function useFoodForm({ mode, foodId }: UseFoodFormOptions): UseFoodFormRe
     queryKey: [...CATEGORIES_QUERY_KEY, restaurantId],
     queryFn: () => listCategories(restaurantId!),
     enabled: restaurantId !== null,
-    staleTime: 5 * 60_000,
+    staleTime: Infinity, // category mutations explicitly invalidate this query
   });
 
   // ── Edit mode: fetch food detail and populate form ───────────────────────────

@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 // All feature flags with their defaults.
 // Defaults are used if the API call fails — never crash on missing flags.
@@ -43,23 +44,35 @@ interface FeatureFlagActions {
 
 type FeatureFlagStore = FeatureFlagState & FeatureFlagActions;
 
-export const useFeatureFlagStore = create<FeatureFlagStore>((set) => ({
-  // ── Initial state ──────────────────────────────────────────────────────────
-  flags: DEFAULT_FLAGS,
-  lastFetchedAt: null,
-
-  // ── Actions ────────────────────────────────────────────────────────────────
-
-  setFlags: (flags) =>
-    set({
-      flags,
-      lastFetchedAt: Date.now(),
-    }),
-
-  // Called on logout — resets to defaults so stale flags never leak between sessions.
-  resetFlags: () =>
-    set({
+export const useFeatureFlagStore = create<FeatureFlagStore>()(
+  persist(
+    (set) => ({
+      // ── Initial state ──────────────────────────────────────────────────────────
       flags: DEFAULT_FLAGS,
       lastFetchedAt: null,
+
+      // ── Actions ────────────────────────────────────────────────────────────────
+
+      setFlags: (flags) =>
+        set({
+          flags,
+          lastFetchedAt: Date.now(),
+        }),
+
+      // Called on logout — resets to defaults so stale flags never leak between sessions.
+      resetFlags: () =>
+        set({
+          flags: DEFAULT_FLAGS,
+          lastFetchedAt: null,
+        }),
     }),
-}));
+    {
+      name: "billsmart-feature-flags",
+      // Persist only data fields — actions are not serialisable.
+      partialize: (state) => ({
+        flags: state.flags,
+        lastFetchedAt: state.lastFetchedAt,
+      }),
+    }
+  )
+);

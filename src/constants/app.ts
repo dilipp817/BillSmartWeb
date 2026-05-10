@@ -24,6 +24,9 @@ export const DEVICE_ID_KEY = "bs_device_id"; // localStorage key for the stable 
 // Feature Flags
 export const FLAG_REFETCH_THROTTLE_MS = 15 * 60 * 1_000; // re-fetch at most once every 15 minutes on tab focus
 
+// Keep-Alive — prevents Render free-tier cold starts (instances spin down after 15 min idle)
+export const KEEP_ALIVE_INTERVAL_MS = 14 * 60 * 1_000; // ping every 14 min
+
 // Pagination
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;

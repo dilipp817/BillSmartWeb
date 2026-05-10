@@ -17,8 +17,9 @@ const queryClientConfig: QueryClientConfig = {
       staleTime: 30_000,
       // Keep unused data in cache for 5 minutes before garbage collecting.
       gcTime: 5 * 60 * 1_000,
-      // Refetch when the browser tab regains focus (catches session expiry, stale orders).
-      refetchOnWindowFocus: true,
+      // Do not refetch on tab focus — polling hooks handle live order/table data,
+      // and focus events during a busy shift would flood the backend.
+      refetchOnWindowFocus: false,
       // Do not refetch on reconnect by default — polling hooks handle live data.
       refetchOnReconnect: false,
     },
