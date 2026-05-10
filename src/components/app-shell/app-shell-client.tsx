@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 
 import { useFeatureFlags } from "@/features/auth/hooks/use-feature-flags";
 import { useOfflineSyncEffect } from "@/features/orders/hooks/use-offline-order-queue";
-import { useKeepAlive } from "@/hooks/use-keep-alive";
 
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
@@ -20,15 +19,14 @@ interface AppShellClientProps {
  *
  * Mounts session-level hooks once for the entire authenticated session:
  *  1. useFeatureFlags — fetches flags once after login; served from localStorage on subsequent loads
- *  2. useKeepAlive    — pings the backend every 14 min to prevent Render free-tier cold starts
  *
  * Auth state is hydrated from localStorage via Zustand persist — no /auth/me call needed.
+ * Backend keep-alive is handled server-side by the backend team.
  * Renders: sidebar (left) + header (top) + scrollable page content (right/main).
  * Mount once at the (authenticated) route group layout — never per-page.
  */
 export function AppShellClient({ children }: AppShellClientProps) {
   useFeatureFlags();
-  useKeepAlive();
   const { syncedCount } = useOfflineSyncEffect();
 
   return (

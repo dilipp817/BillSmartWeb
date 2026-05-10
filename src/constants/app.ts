@@ -22,10 +22,7 @@ export const DEVICE_TYPE = "web"; // sent with every login request; never change
 export const DEVICE_ID_KEY = "bs_device_id"; // localStorage key for the stable browser device identifier
 
 // Feature Flags
-export const FLAG_REFETCH_THROTTLE_MS = 15 * 60 * 1_000; // re-fetch at most once every 15 minutes on tab focus
-
-// Keep-Alive — prevents Render free-tier cold starts (instances spin down after 15 min idle)
-export const KEEP_ALIVE_INTERVAL_MS = 14 * 60 * 1_000; // ping every 14 min
+// (No throttle constant needed — flags are fetched once on login and persisted to localStorage.)
 
 // Pagination
 export const DEFAULT_PAGE_SIZE = 20;

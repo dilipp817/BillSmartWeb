@@ -114,13 +114,22 @@ export interface CreateFoodRequest {
 }
 
 /**
- * UpdateFoodRequest — same fields as CreateFoodRequest.
+ * UpdateFoodRequest — body for PUT /api/v1/foods/{id}.
  *
- * ⚠️ The current backend contract has NO PUT/PATCH endpoint for food items.
- * This type is kept as the form model for the Add/Edit Food screen (M-05).
- * If/when the backend adds an update endpoint it will accept this shape.
+ * restaurant_id is required by the schema even though the backend ignores it
+ * for security (ownership is verified via JWT). Send it for schema consistency.
+ * is_available is NOT part of this endpoint — managed via a separate toggle.
  */
-export type UpdateFoodRequest = CreateFoodRequest;
+export interface UpdateFoodRequest {
+  name: string;
+  price: number;
+  description?: string | null;
+  image_url?: string | null;
+  restaurant_id: number;
+  category_id: number | null;
+  is_vegetarian: boolean;
+  is_spicy: boolean;
+}
 
 export interface CreateCategoryRequest {
   name: string;

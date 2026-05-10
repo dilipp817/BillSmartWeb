@@ -13,7 +13,7 @@ const queryClientConfig: QueryClientConfig = {
         }
         return failureCount < 2;
       },
-      // 30 seconds — data older than this is refetched in the background on mount/focus.
+      // 30 seconds — data older than this is refetched in the background on mount.
       staleTime: 30_000,
       // Keep unused data in cache for 5 minutes before garbage collecting.
       gcTime: 5 * 60 * 1_000,

@@ -10,9 +10,10 @@ import { type Resolver, useForm } from "react-hook-form";
 import { useAuthStore } from "@/store/use-auth-store";
 
 import { listCategories } from "../services/category-service";
-import { createFood, getFood } from "../services/food-service";
-import type { CategoryDto, CreateFoodRequest } from "../types";
+import { createFood, getFood, updateFood } from "../services/food-service";
+import type { CategoryDto, CreateFoodRequest, UpdateFoodRequest } from "../types";
 import { CATEGORIES_QUERY_KEY, FOOD_BROWSE_QUERY_KEY } from "./use-food-browse";
+import { FOOD_DETAIL_QUERY_KEY } from "./use-food-detail";
 import { MENU_MANAGEMENT_QUERY_KEY } from "./use-menu-management";
 import { foodFormSchema, type FoodFormValues } from "../utils/food-form-schema";
 
@@ -28,8 +29,6 @@ export interface UseFoodFormResult {
   isSubmitting: boolean;
   submitError: string | null;
   mode: FoodFormMode;
-  /** Edit mode only — no backend update endpoint exists yet */
-  isEditDisabled: boolean;
   onSubmit: (values: FoodFormValues) => void;
 }
 
@@ -45,9 +44,9 @@ interface UseFoodFormOptions {
  * useFoodForm — ViewModel for the Add/Edit Food form (M-05).
  *
  * - "add" mode: submits POST /api/v1/foods/restaurant/{restaurantId}, then
- *   navigates back to /menu.
- * - "edit" mode: fetches food detail via GET /api/v1/foods/{id} and populates
- *   the form. Save is disabled because the backend has no update endpoint yet.
+ *   navigates back to /menu/management.
+ * - "edit" mode: fetches food detail via GET /api/v1/foods/{id}, populates the
+ *   form, then submits PUT /api/v1/foods/{id} on save (admin only).
  *
  * Layer: Hook (state + logic — no JSX, no direct API calls)
  */
@@ -115,9 +114,37 @@ export function useFoodForm({ mode, foodId }: UseFoodFormOptions): UseFoodFormRe
     },
   });
 
+  // ── Edit mode: update mutation ───────────────────────────────────────────────
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateFoodRequest) => {
+      if (!foodId) throw new Error("No food ID");
+      return updateFood(foodId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: MENU_MANAGEMENT_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: FOOD_BROWSE_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: FOOD_DETAIL_QUERY_KEY(foodId!) });
+      router.push(`/menu/${foodId}`);
+    },
+  });
+
   // ── Submit handler ───────────────────────────────────────────────────────────
   function onSubmit(values: FoodFormValues) {
-    if (mode === "edit") return; // guard: no backend endpoint yet
+    if (mode === "edit") {
+      if (!foodId || !restaurantId) throw new Error("No food or restaurant context");
+      const request: UpdateFoodRequest = {
+        name: values.name,
+        price: values.price,
+        restaurant_id: restaurantId,
+        category_id: values.category_id,
+        is_vegetarian: values.is_vegetarian,
+        is_spicy: values.is_spicy,
+        description: values.description?.trim() || null,
+        image_url: values.image_url || null,
+      };
+      updateMutation.mutate(request);
+      return;
+    }
 
     const request: CreateFoodRequest = {
       name: values.name,
@@ -131,8 +158,9 @@ export function useFoodForm({ mode, foodId }: UseFoodFormOptions): UseFoodFormRe
     createMutation.mutate(request);
   }
 
-  const submitError = createMutation.error
-    ? (createMutation.error as Error).message || "Failed to save food item."
+  const activeError = mode === "edit" ? updateMutation.error : createMutation.error;
+  const submitError = activeError
+    ? (activeError as Error).message || "Failed to save food item."
     : null;
 
   return {
@@ -140,10 +168,9 @@ export function useFoodForm({ mode, foodId }: UseFoodFormOptions): UseFoodFormRe
     categories: categoriesQuery.data ?? [],
     isCategoriesLoading: categoriesQuery.isLoading,
     isLoadingFood: mode === "edit" && foodDetailQuery.isLoading,
-    isSubmitting: createMutation.isPending,
+    isSubmitting: createMutation.isPending || updateMutation.isPending,
     submitError,
     mode,
-    isEditDisabled: mode === "edit",
     onSubmit,
   };
 }
