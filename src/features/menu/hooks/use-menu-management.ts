@@ -85,7 +85,7 @@ export function useMenuManagement(): UseMenuManagementResult {
     queryKey: [...CATEGORIES_QUERY_KEY, restaurantId],
     queryFn: () => listCategories(restaurantId!),
     enabled: restaurantId !== null,
-    staleTime: 5 * 60_000,
+    staleTime: Infinity, // category mutations explicitly invalidate this query
   });
 
   // ── Delete mutation ──────────────────────────────────────────────────────────

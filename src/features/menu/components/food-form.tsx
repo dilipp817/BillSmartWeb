@@ -20,8 +20,7 @@ interface FoodFormProps {
  * FoodForm — Zod-validated form for Add and Edit food (M-05).
  *
  * Receives the ViewModel from the page so this component contains only JSX.
- * In "edit" mode the submit button is disabled because the backend has no
- * update endpoint yet (see UpdateFoodRequest note in types/index.ts).
+ * Both add and edit modes are fully functional.
  */
 export function FoodForm({ vm, title }: FoodFormProps) {
   const {
@@ -31,7 +30,6 @@ export function FoodForm({ vm, title }: FoodFormProps) {
     isLoadingFood,
     isSubmitting,
     submitError,
-    isEditDisabled,
     onSubmit,
   } = vm;
 
@@ -66,18 +64,6 @@ export function FoodForm({ vm, title }: FoodFormProps) {
         <h1 className="text-xl font-semibold">{title}</h1>
       </div>
 
-      {/* Edit-mode notice */}
-      {isEditDisabled && (
-        <div className="bg-muted rounded-lg p-3 text-sm">
-          Editing is not available yet — the backend update endpoint is pending. You can view and
-          delete items from the{" "}
-          <Link href="/menu/management" className="text-primary underline underline-offset-4">
-            Menu
-          </Link>{" "}
-          screen.
-        </div>
-      )}
-
       {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         {/* Server error */}
@@ -96,7 +82,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
             id="name"
             type="text"
             placeholder="e.g. Butter Chicken"
-            disabled={isSubmitting || isEditDisabled}
+            disabled={isSubmitting}
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "name-error" : undefined}
             {...register("name")}
@@ -119,7 +105,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
             step="0.01"
             min="0.01"
             placeholder="e.g. 350.00"
-            disabled={isSubmitting || isEditDisabled}
+            disabled={isSubmitting}
             aria-invalid={!!errors.price}
             aria-describedby={errors.price ? "price-error" : undefined}
             {...register("price")}
@@ -138,7 +124,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
           </Label>
           <select
             id="category_id"
-            disabled={isSubmitting || isEditDisabled || isCategoriesLoading}
+            disabled={isSubmitting || isCategoriesLoading}
             aria-invalid={!!errors.category_id}
             aria-describedby={errors.category_id ? "category-error" : undefined}
             className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50"
@@ -167,7 +153,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
             id="description"
             rows={3}
             placeholder="Short description (optional)"
-            disabled={isSubmitting || isEditDisabled}
+            disabled={isSubmitting}
             className="border-input bg-background placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 w-full rounded-lg border px-2.5 py-1.5 text-sm outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50"
             {...register("description")}
           />
@@ -180,7 +166,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
             id="image_url"
             type="url"
             placeholder="https://… (optional)"
-            disabled={isSubmitting || isEditDisabled}
+            disabled={isSubmitting}
             aria-invalid={!!errors.image_url}
             aria-describedby={errors.image_url ? "image-url-error" : undefined}
             {...register("image_url")}
@@ -200,7 +186,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
               type="checkbox"
               className="size-4 accent-green-600"
               checked={isVegetarian}
-              disabled={isSubmitting || isEditDisabled}
+              disabled={isSubmitting}
               onChange={(e) => setValue("is_vegetarian", e.target.checked)}
             />
             Vegetarian
@@ -212,7 +198,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
               type="checkbox"
               className="size-4 accent-orange-500"
               checked={isSpicy}
-              disabled={isSubmitting || isEditDisabled}
+              disabled={isSubmitting}
               onChange={(e) => setValue("is_spicy", e.target.checked)}
             />
             Spicy
@@ -221,7 +207,7 @@ export function FoodForm({ vm, title }: FoodFormProps) {
 
         {/* Submit */}
         <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={isSubmitting || isEditDisabled} className="min-w-24">
+          <Button type="submit" disabled={isSubmitting} className="min-w-24">
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />

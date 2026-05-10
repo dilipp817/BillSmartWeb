@@ -1,7 +1,13 @@
 import apiClient from "@/lib/axios";
 import type { ApiResponse } from "@/types";
 
-import type { CreateFoodRequest, FoodDetail, FoodListParams, FoodPageData } from "../types";
+import type {
+  CreateFoodRequest,
+  FoodDetail,
+  FoodListParams,
+  FoodPageData,
+  UpdateFoodRequest,
+} from "../types";
 
 /**
  * Food Service — read functions (O-05) + CRUD admin functions (M-02).
@@ -10,6 +16,7 @@ import type { CreateFoodRequest, FoodDetail, FoodListParams, FoodPageData } from
  *   GET    /api/v1/foods                           — paginated list with all filters
  *   GET    /api/v1/foods/{id}                      — full detail
  *   POST   /api/v1/foods/restaurant/{restaurantId} — create food item (admin only)
+ *   PUT    /api/v1/foods/{id}                      — update food item (admin only)
  *   DELETE /api/v1/foods/{id}                      — soft-delete food item (admin only)
  *
  * Layer: Service (API calls only — no state, no toasts, no redirects)
@@ -58,6 +65,20 @@ export async function createFood(
     `/v1/foods/restaurant/${restaurantId}`,
     data
   );
+  return response.data.data;
+}
+
+/**
+ * PUT /api/v1/foods/{id}
+ *
+ * Update an existing food item (admin only).
+ * is_available is NOT part of this request — managed via a separate toggle endpoint.
+ * restaurant_id must be sent for schema consistency; backend ignores it for security
+ * (ownership is verified via JWT).
+ * Returns the full updated FoodDetail.
+ */
+export async function updateFood(foodId: number, data: UpdateFoodRequest): Promise<FoodDetail> {
+  const response = await apiClient.put<ApiResponse<FoodDetail>>(`/v1/foods/${foodId}`, data);
   return response.data.data;
 }
 

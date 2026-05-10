@@ -8,10 +8,7 @@ import { z } from "zod";
  * always deliver strings; coercion converts them before validation runs.
  */
 export const foodFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be at most 100 characters"),
+  name: z.string().min(1, "Name is required").max(255, "Name must be at most 255 characters"),
 
   price: z.coerce
     .number({ error: "Price must be a number" })
